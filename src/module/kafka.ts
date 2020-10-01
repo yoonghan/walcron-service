@@ -1,4 +1,3 @@
-`use strict`
 import Kafka from 'kafkajs';
 
 function _getTopic(prefix:string) { return `${prefix}default`}
@@ -45,6 +44,7 @@ export async function runKafkaConsumer(kafkaClient:any, prefix:string, groupId:s
   await consumer.subscribe({topic: _getTopic(prefix)});
 
   const disconnect = () => {
+    console.log('disconnect');
     consumer.close(true, () => {});
   }
 

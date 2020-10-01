@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.runKafkaConsumer = exports.runKafkaProducer = exports.createKafkaConf = void 0;
-`use strict`;
 const kafkajs_1 = __importDefault(require("kafkajs"));
 function _getTopic(prefix) { return `${prefix}default`; }
 function createKafkaConf(brokerList, username, password) {
@@ -40,6 +39,7 @@ async function runKafkaConsumer(kafkaClient, prefix, groupId, writer) {
     await consumer.connect();
     await consumer.subscribe({ topic: _getTopic(prefix) });
     const disconnect = () => {
+        console.log('disconnect');
         consumer.close(true, () => { });
     };
     const _consumeMessage = () => {

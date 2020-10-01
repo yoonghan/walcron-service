@@ -1,7 +1,14 @@
-'use strict';
+import cors from 'cors';
+
+import general from './controller/general';
 
 import root from './controller/root';
 import locker from './controller/locker';
+
+var corsOptions = {
+  origin: process.env.ALLOWED_CROSS_ORIGIN,
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
 
 module.exports = function(app) {
   app.map = function(a, route){
@@ -12,7 +19,7 @@ module.exports = function(app) {
           app.map(a[key], route + key);
           break;
         case 'function':
-          app[key](route, a[key]);
+          app[key](route, cors(corsOptions), a[key]);
           break;
       }
     }
@@ -24,8 +31,11 @@ module.exports = function(app) {
     },
     '/api': {
       '/locker/monitor': {
-        get: locker.monitor,
-        post: locker.invokeMonitor
+        get: locker.monitor
+      },
+      '/locker/trigger': {
+        post: locker.invokeMonitor,
+        options: general.preflight
       }
     }
    });
