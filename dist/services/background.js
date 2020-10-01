@@ -15,19 +15,18 @@ async function startKafkaMonitor() {
         try {
             const messageInJson = JSON.parse(message);
             airtable.create(airtable_1.EnumAirtables.LOCK_LOG, [
-                {
-                    "fields": {
-                        "Order Id": messageInJson.orderId,
-                        "Business Partner Id": [messageInJson.businessPartnerId],
-                        "Locker Id": messageInJson.lockerid,
-                        "Status": messageInJson.state,
-                        "Trigger DateTime": messageInJson.triggerTime
-                    }
-                }
+                airtable.buildLockLog(messageInJson.orderId, messageInJson.businessPartnerId, messageInJson.lockerid, messageInJson.state, messageInJson.triggerTime)
             ]);
+            if (messageInJson.state === 'lock') {
+                airtable.updateOrder(messageInJson.partnerId, messageInJson.orderId, airtable_1.EnumOrderStatus.READY);
+            }
+            else {
+                airtable.updateOrder(messageInJson.partnerId, messageInJson.orderId, airtable_1.EnumOrderStatus.ORDER_PLACED);
+            }
         }
         catch (err) {
             //skip
+            console.error(err, 'writer');
         }
         pusher.trigger(`${const_1.PUSHER.channel_prefix}${PUSHER_CHANNEL_NAME_TWICE}`, `${const_1.PUSHER.event}`, {
             "message": message

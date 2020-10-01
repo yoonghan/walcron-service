@@ -33,8 +33,13 @@ module.exports = function (app) {
             '/locker/monitor': {
                 get: locker_1.default.monitor
             },
-            '/locker/trigger': {
-                post: locker_1.default.invokeMonitor,
+            '/locker/trigger/:businesspartnerid/:partnerid': {
+                post: locker_1.default.trigger,
+                options: general_1.default.preflight
+            },
+            '/locker/order/:businesspartnerid/:partnerid': {
+                get: locker_1.default.getAvailOrders,
+                post: locker_1.default.placeOrder,
                 options: general_1.default.preflight
             }
         }

@@ -1,6 +1,6 @@
 import {runKafkaConsumer, createKafkaConf} from '../module/kafka';
 import {createPusher} from '../module/pusher';
-import {connectAirtable, EnumAirtables} from '../module/airtable';
+import {connectAirtable, EnumAirtables, EnumOrderStatus} from '../module/airtable';
 import {PUSHER} from '../module/const';
 
 const {KAFKA_BROKERS, KAFKA_USERNAME, KAFKA_PASSWORD, KAFKA_TOPIC_PREFIX, KAFKA_GROUP_ID} = process.env;
@@ -16,20 +16,27 @@ async function startKafkaMonitor(){
   const _writer = () => (message) => {
     try{
       const messageInJson = JSON.parse(message);
+
       airtable.create(EnumAirtables.LOCK_LOG, [
-        {
-          "fields": {
-            "Order Id": messageInJson.orderId,
-            "Business Partner Id": [messageInJson.businessPartnerId],
-            "Locker Id": messageInJson.lockerid,
-            "Status": messageInJson.state,
-            "Trigger DateTime": messageInJson.triggerTime
-          }
-        }
+        airtable.buildLockLog(
+            messageInJson.orderId,
+            messageInJson.businessPartnerId,
+            messageInJson.lockerid,
+            messageInJson.state,
+            messageInJson.triggerTime
+          )
       ]);
+
+      if(messageInJson.state === 'lock') {
+        airtable.updateOrder(messageInJson.partnerId, messageInJson.orderId, EnumOrderStatus.READY);
+      }
+      else {
+        airtable.updateOrder(messageInJson.partnerId, messageInJson.orderId, EnumOrderStatus.ORDER_PLACED);
+      }
     }
     catch(err) {
       //skip
+      console.error(err, 'writer');
     }
 
     pusher.trigger(

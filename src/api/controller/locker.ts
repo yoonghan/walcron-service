@@ -1,5 +1,6 @@
 //This is a project for lockers
 import {runKafkaProducer, createKafkaConf} from '../../module/kafka';
+import {connectAirtable, EnumAirtables, EnumOrderStatus} from '../../module/airtable';
 
 const {KAFKA_BROKERS, KAFKA_USERNAME, KAFKA_PASSWORD, KAFKA_TOPIC_PREFIX, KAFKA_GROUP_ID} = process.env;
 const kafkaConf = createKafkaConf(KAFKA_BROKERS.split(','), KAFKA_USERNAME, KAFKA_PASSWORD);
@@ -7,11 +8,16 @@ const kafkaConf = createKafkaConf(KAFKA_BROKERS.split(','), KAFKA_USERNAME, KAFK
 let kafkaWriter:any = undefined;
 
 const locker = {
-  monitor: async function(req, res){
+  monitor: async function(req, res) {
     res.json({'status': 'initiated reader'});
   },
-  invokeMonitor: async function(req, res){
+  trigger: async function(req, res) {
+    const partnerId = req.params.partnerid;
+    const businessPartnerId = req.params.businesspartnerid;
+
     const _createMessage = (message) => {
+      message.partnerId = partnerId;
+      message.businessPartnerId = businessPartnerId;
       message.triggerTime = new Date().toISOString();
       return JSON.stringify(message);
     }
@@ -22,8 +28,46 @@ const locker = {
     }
 
     kafkaWriter(_createMessage(req.body));
-    
+
     res.json({'status': 'initiated writer'});
+  },
+  placeOrder: async function(req, res){
+    const orderId = req.body.order_id;
+    const contactType = req.body.contact_type;
+    const contactInfo = req.body.contact_info;
+    const businessPartnerId = req.params.businesspartnerid;
+
+    const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE} = process.env;
+    const airtable = connectAirtable(AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE);
+
+    airtable.create(EnumAirtables.ORDER, [
+      airtable.buildOrder(
+          orderId,
+          businessPartnerId,
+          contactType,
+          contactInfo,
+          EnumOrderStatus.ORDER_PLACED
+        )
+    ], function(err, records) {
+      if (err) {
+        res.status(400).json({'status': err.message});
+      }
+      res.json({'status': 'ok'});
+    });
+  },
+  getAvailOrders: async function(req, res) {
+    const partnerId = req.params.partnerid;
+
+    const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE} = process.env;
+    const airtable = connectAirtable(AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE);
+    try {
+      const orders = await airtable.getAvailableOrders(partnerId);
+
+      res.json({'status': 'ok', 'orders': orders })
+    }
+    catch(err) {
+      res.status(404).json({'status': 'no records'});
+    }
   }
 };
 
