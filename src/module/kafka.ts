@@ -22,7 +22,7 @@ export function createKafkaConf (
   return new Kafka.Kafka(config);
 }
 
-export async function withKafkaProducer(kafkaClient:any, prefix:string) {
+export async function runKafkaProducer(kafkaClient:any, prefix:string) {
   const producer = kafkaClient.producer();
   await producer.connect();
 
@@ -38,7 +38,7 @@ export async function withKafkaProducer(kafkaClient:any, prefix:string) {
   return writer;
 }
 
-export async function withKafkaConsumer(kafkaClient:any, prefix:string, groupId:string, writer:(msg:string) => void) {
+export async function runKafkaConsumer(kafkaClient:any, prefix:string, groupId:string, writer:(msg:string) => void) {
   //Kafka guarantees that a message is only read by a single consumer in the group.
   const consumer = kafkaClient.consumer({groupId});
   await consumer.connect();
@@ -63,5 +63,5 @@ export async function withKafkaConsumer(kafkaClient:any, prefix:string, groupId:
 
   _consumeMessage();
 
-  return "";
+  return disconnect;
 }
