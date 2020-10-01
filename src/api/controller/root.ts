@@ -1,6 +1,6 @@
 const root = {
   index: function(req, res){
-    res.send('Hello World!');
+    res.send('Hello to Walcron service!');
   }
 };
 

@@ -6,6 +6,9 @@ const app = express();
 const serverHost = process.env.HOST || 'localhost'
 const serverPort = process.env.PORT || 3000
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 routes(app);
 
 app.listen(serverPort, function() {
