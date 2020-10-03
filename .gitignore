@@ -1,4 +1,6 @@
 .env
+.private/
+private/
 
 # dependencies
 /node_modules
