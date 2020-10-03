@@ -10,6 +10,7 @@ var EnumAirtables;
 (function (EnumAirtables) {
     EnumAirtables["ORDER"] = "Order";
     EnumAirtables["LOCK_LOG"] = "Lock Log";
+    EnumAirtables["REPRESENTATIVE"] = "Representative";
 })(EnumAirtables = exports.EnumAirtables || (exports.EnumAirtables = {}));
 ;
 var EnumOrderStatus;
@@ -84,6 +85,49 @@ function connectAirtable(apiKey, baseKey) {
             }
         });
     };
+    const _findRepresentativeToken = async (representativeId) => (new Promise((resolve, reject) => {
+        base(EnumAirtables.REPRESENTATIVE).select({
+            pageSize: 1,
+            view: "Grid view",
+            filterByFormula: `{Representative Id}='${representativeId}'`
+        }).firstPage(function (err, records) {
+            if (err || records.length !== 1) {
+                console.error(err, "retrieve update error");
+                reject("record not found");
+            }
+            else {
+                resolve(records[0].get('Pusher Token'));
+            }
+        });
+    }));
+    const _updateRepresentativeToken = async (representativeId, token) => (new Promise((resolve, reject) => {
+        base(EnumAirtables.REPRESENTATIVE).select({
+            pageSize: 1,
+            view: "Grid view",
+            filterByFormula: `{Representative Id}='${representativeId}'`
+        }).firstPage(function (err, records) {
+            if (err || records.length !== 1) {
+                console.error(err, "retrieve update error");
+                reject("record not found");
+            }
+            else {
+                base(EnumAirtables.REPRESENTATIVE).update([
+                    {
+                        "id": records[0].id,
+                        "fields": {
+                            "Pusher Token": token
+                        }
+                    }
+                ], function (err, records) {
+                    if (err) {
+                        console.error(err, "update error");
+                        reject(`update error: ${err}`);
+                    }
+                    resolve("ok");
+                });
+            }
+        });
+    }));
     const defaultCallback = (err, records) => {
         if (err) {
             console.error(err);
@@ -98,7 +142,9 @@ function connectAirtable(apiKey, baseKey) {
         buildLockLog: _buildLockLog,
         buildOrder: _buildOrder,
         getAvailableOrders: _getAllAvailableOrders,
-        updateOrder: _updateOrder
+        updateOrder: _updateOrder,
+        findPusherToken: _findRepresentativeToken,
+        updateRepresentativeToken: _updateRepresentativeToken
     };
 }
 exports.connectAirtable = connectAirtable;

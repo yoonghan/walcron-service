@@ -3,7 +3,8 @@ import {randomGenPIN} from './util';
 
 export enum EnumAirtables {
   ORDER = "Order",
-  LOCK_LOG = "Lock Log"
+  LOCK_LOG = "Lock Log",
+  REPRESENTATIVE = "Representative"
 };
 
 export enum EnumOrderStatus {
@@ -13,7 +14,7 @@ export enum EnumOrderStatus {
   DELIVERED = "Delivered"
 };
 
-type T_ORDER_CONTACT_TYPE = "Push Notification"|"Email"|"SMS";
+type T_ORDER_CONTACT_TYPE = "Push Notification"|"Email"|"SMS"|"Representative";
 
 export function connectAirtable (apiKey:string, baseKey:string) {
   const base = new Airtable({apiKey: apiKey}).base(baseKey);
@@ -74,8 +75,6 @@ export function connectAirtable (apiKey:string, baseKey:string) {
   }
 
   const _updateOrder = async (partnerId:string, orderId: string, status:EnumOrderStatus) => {
-
-
     base(EnumAirtables.ORDER).select({
         pageSize: 1,
         view: "Grid view",
@@ -102,6 +101,55 @@ export function connectAirtable (apiKey:string, baseKey:string) {
     });
   }
 
+  const _findRepresentativeToken = async (representativeId:string) => (
+    new Promise((resolve, reject) => {
+      base(EnumAirtables.REPRESENTATIVE).select({
+          pageSize: 1,
+          view: "Grid view",
+          filterByFormula: `{Representative Id}='${representativeId}'`
+      }).firstPage(function(err, records) {
+        if(err || records.length !== 1) {
+          console.error(err, "retrieve update error");
+          reject("record not found");
+        }
+        else {
+          resolve(records[0].get('Pusher Token'));
+        }
+      });
+    })
+  )
+
+  const _updateRepresentativeToken = async (representativeId:string, token:string) => (
+    new Promise((resolve, reject) => {
+      base(EnumAirtables.REPRESENTATIVE).select({
+          pageSize: 1,
+          view: "Grid view",
+          filterByFormula: `{Representative Id}='${representativeId}'`
+      }).firstPage(function(err, records) {
+        if(err || records.length !== 1) {
+          console.error(err, "retrieve update error");
+          reject("record not found");
+        }
+        else {
+          base(EnumAirtables.REPRESENTATIVE).update([
+            {
+              "id": records[0].id,
+              "fields": {
+                "Pusher Token": token
+              }
+            }
+          ], function(err, records) {
+            if (err) {
+              console.error(err, "update error");
+              reject(`update error: ${err}`);
+            }
+            resolve("ok");
+          });
+        }
+      });
+    })
+  )
+
   const defaultCallback = (err, records) => {
     if (err) {
       console.error(err);
@@ -121,6 +169,8 @@ export function connectAirtable (apiKey:string, baseKey:string) {
     buildLockLog: _buildLockLog,
     buildOrder: _buildOrder,
     getAvailableOrders: _getAllAvailableOrders,
-    updateOrder: _updateOrder
+    updateOrder: _updateOrder,
+    findPusherToken: _findRepresentativeToken,
+    updateRepresentativeToken: _updateRepresentativeToken
   };
 }

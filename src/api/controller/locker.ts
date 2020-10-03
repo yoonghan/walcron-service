@@ -1,4 +1,5 @@
 //This is a project for lockers
+import {sendCloudMessageByRegistrationToken} from '../../module/firebase';
 import {runKafkaProducer, createKafkaConf} from '../../module/kafka';
 import {connectAirtable, EnumAirtables, EnumOrderStatus} from '../../module/airtable';
 
@@ -6,6 +7,18 @@ const {KAFKA_BROKERS, KAFKA_USERNAME, KAFKA_PASSWORD, KAFKA_TOPIC_PREFIX, KAFKA_
 const kafkaConf = createKafkaConf(KAFKA_BROKERS.split(','), KAFKA_USERNAME, KAFKA_PASSWORD);
 
 let kafkaWriter:any = undefined;
+
+
+const notifyOrderToUser = async(airtable:any, orderId:string, status:EnumOrderStatus, contactType:string, contactInfo:string) => {
+  if(contactType === 'Representative') {
+    const message = {
+      "orderid": orderId,
+      "status": status
+    }
+    const pusherToken = await airtable.findPusherToken();
+    sendCloudMessageByRegistrationToken(message, pusherToken);
+  }
+}
 
 const locker = {
   monitor: async function(req, res) {
@@ -53,6 +66,8 @@ const locker = {
         res.status(400).json({'status': err.message});
       }
       res.json({'status': 'ok'});
+
+      notifyOrderToUser(airtable, orderId, EnumOrderStatus.ORDER_PLACED, contactType, contactInfo);
     });
   },
   getAvailOrders: async function(req, res) {
@@ -67,6 +82,22 @@ const locker = {
     }
     catch(err) {
       res.status(404).json({'status': 'no records'});
+    }
+  },
+  updateUserNotification: async function(req, res) {
+    const userId = req.params.userid;
+    const pushNotificationToken = req.body.push_notification_token;
+
+    const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE} = process.env;
+    const airtable = connectAirtable(AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE);
+
+    try {
+      const orders = await airtable.updateRepresentativeToken(userId, pushNotificationToken);
+
+      res.json({'status': 'ok'})
+    }
+    catch(err) {
+      res.status(404).json({'status': 'fail'});
     }
   }
 };

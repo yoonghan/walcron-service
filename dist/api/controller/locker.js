@@ -1,11 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //This is a project for lockers
+const firebase_1 = require("../../module/firebase");
 const kafka_1 = require("../../module/kafka");
 const airtable_1 = require("../../module/airtable");
 const { KAFKA_BROKERS, KAFKA_USERNAME, KAFKA_PASSWORD, KAFKA_TOPIC_PREFIX, KAFKA_GROUP_ID } = process.env;
 const kafkaConf = kafka_1.createKafkaConf(KAFKA_BROKERS.split(','), KAFKA_USERNAME, KAFKA_PASSWORD);
 let kafkaWriter = undefined;
+const notifyOrderToUser = async (airtable, orderId, status, contactType, contactInfo) => {
+    if (contactType === 'Representative') {
+        const message = {
+            "orderid": orderId,
+            "status": status
+        };
+        const pusherToken = await airtable.findPusherToken();
+        firebase_1.sendCloudMessageByRegistrationToken(message, pusherToken);
+    }
+};
 const locker = {
     monitor: async function (req, res) {
         res.json({ 'status': 'initiated reader' });
@@ -40,6 +51,7 @@ const locker = {
                 res.status(400).json({ 'status': err.message });
             }
             res.json({ 'status': 'ok' });
+            notifyOrderToUser(airtable, orderId, airtable_1.EnumOrderStatus.ORDER_PLACED, contactType, contactInfo);
         });
     },
     getAvailOrders: async function (req, res) {
@@ -52,6 +64,19 @@ const locker = {
         }
         catch (err) {
             res.status(404).json({ 'status': 'no records' });
+        }
+    },
+    updateUserNotification: async function (req, res) {
+        const userId = req.params.userid;
+        const pushNotificationToken = req.body.push_notification_token;
+        const { AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE } = process.env;
+        const airtable = airtable_1.connectAirtable(AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE);
+        try {
+            const orders = await airtable.updateRepresentativeToken(userId, pushNotificationToken);
+            res.json({ 'status': 'ok' });
+        }
+        catch (err) {
+            res.status(404).json({ 'status': 'fail' });
         }
     }
 };

@@ -41,6 +41,9 @@ module.exports = function(app) {
         get: locker.getAvailOrders,
         post: locker.placeOrder,
         options: general.preflight
+      },
+      '/locker/users/:userid/notification': {
+        put: locker.updateUserNotification
       }
     }
    });

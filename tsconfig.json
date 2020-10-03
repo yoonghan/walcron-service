@@ -6,7 +6,8 @@
     "moduleResolution": "node",
     "sourceMap": false,
     "outDir": "./dist",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "include": ["src/**/*"],
   "lib": ["es2015"]
