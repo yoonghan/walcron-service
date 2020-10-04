@@ -1,6 +1,5 @@
 import admin from 'firebase-admin'
-
-const serviceAccount=JSON.parse(process.env.FIREBASE_CERT);
+import serviceAccount from '../../.data/locker-firebase.json'
 
 admin.initializeApp({
   credential: admin.credential.cert((serviceAccount as any))
