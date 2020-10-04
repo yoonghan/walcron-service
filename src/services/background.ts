@@ -1,3 +1,5 @@
+
+import {userNotifier} from '../module/notification';
 import {runKafkaConsumer, createKafkaConf} from '../module/kafka';
 import {createPusher} from '../module/pusher';
 import {connectAirtable, EnumAirtables, EnumOrderStatus} from '../module/airtable';
@@ -13,7 +15,7 @@ const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE} = process.env;
 const airtable = connectAirtable(AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE);
 
 async function startKafkaMonitor(){
-  const _writer = () => (message) => {
+  const _writer = () => async (message:string) => {
     try{
       const messageInJson = JSON.parse(message);
 
@@ -28,7 +30,14 @@ async function startKafkaMonitor(){
       ]);
 
       if(messageInJson.state === 'lock') {
-        airtable.updateOrder(messageInJson.partnerId, messageInJson.orderId, EnumOrderStatus.READY);
+        try{
+          const response = await airtable.updateOrder(messageInJson.partnerId, messageInJson.orderId, EnumOrderStatus.READY);
+
+          userNotifier(airtable, messageInJson.orderId, EnumOrderStatus.READY, (response as any).contactType, (response as any).contactInfo);
+        }
+        catch(err) {
+          console.error('error');
+        }
       }
       else {
         airtable.updateOrder(messageInJson.partnerId, messageInJson.orderId, EnumOrderStatus.ORDER_PLACED);
@@ -51,7 +60,7 @@ async function startKafkaMonitor(){
 
   runKafkaConsumer(kafkaConf, KAFKA_TOPIC_PREFIX, KAFKA_GROUP_ID, _writer());
 
-  console.log("kafka consumer will run in background - forever!");
+  console.log("kafka consumer and writer will run in background - forever!");
 }
 
 //Run services.

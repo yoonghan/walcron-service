@@ -74,34 +74,44 @@ export function connectAirtable (apiKey:string, baseKey:string) {
     });
   }
 
-  const _updateOrder = async (partnerId:string, orderId: string, status:EnumOrderStatus) => {
-    base(EnumAirtables.ORDER).select({
-        pageSize: 1,
-        view: "Grid view",
-        filterByFormula: `AND({Order Id}='${orderId}', {Business Partner Id} = '${partnerId}')`
-    }).firstPage(function(err, records) {
-      if(err || records.length !== 1) {
-        console.error(err, 'retrieve update error');
-      }
-      else {
-        base(EnumAirtables.ORDER).update([
-          {
-            "id": records[0].id,
-            "fields": {
-              "Status": status,
-              "PIN": randomGenPIN()
+  const _updateOrder = async (partnerId:string, orderId: string, status:EnumOrderStatus) => (
+    new Promise((resolve, reject) => {
+      base(EnumAirtables.ORDER).select({
+          pageSize: 1,
+          view: "Grid view",
+          filterByFormula: `AND({Order Id}='${orderId}', {Business Partner Id} = '${partnerId}')`
+      }).firstPage(function(err, records) {
+        if(err || records.length !== 1) {
+          console.error(err, 'retrieve update error');
+          reject('retrieve error');
+        }
+        else {
+          base(EnumAirtables.ORDER).update([
+            {
+              "id": records[0].id,
+              "fields": {
+                "Status": status,
+                "PIN": randomGenPIN()
+              }
             }
-          }
-        ], function(err, records) {
-          if (err) {
-            console.error(err, 'update error')
-          }
-        });
-      }
-    });
-  }
+          ], function(err, records) {
+            if (err) {
+              console.error(err, 'update error')
+            }
+          });
 
-  const _findRepresentativeToken = async (representativeId:string) => (
+          resolve(
+            {
+            contactType: records[0].get('Contact Type'),
+            contactInfo: records[0].get('Contact Info')
+            }
+          );
+        }
+      });
+    })
+  )
+
+  const _findRepresentativeInfo = async (representativeId:string) => (
     new Promise((resolve, reject) => {
       base(EnumAirtables.REPRESENTATIVE).select({
           pageSize: 1,
@@ -113,7 +123,14 @@ export function connectAirtable (apiKey:string, baseKey:string) {
           reject("record not found");
         }
         else {
-          resolve(records[0].get('Pusher Token'));
+          resolve(
+            {
+              email: records[0].get('Email'),
+              sms: records[0].get('SMS'),
+              pushertoken: records[0].get('Pusher Token'),
+              preference: records[0].get('Preference')
+            }
+          );
         }
       });
     })
@@ -170,7 +187,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
     buildOrder: _buildOrder,
     getAvailableOrders: _getAllAvailableOrders,
     updateOrder: _updateOrder,
-    findPusherToken: _findRepresentativeToken,
+    findRepresentativeInfo: _findRepresentativeInfo,
     updateRepresentativeToken: _updateRepresentativeToken
   };
 }

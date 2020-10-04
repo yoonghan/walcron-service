@@ -1,5 +1,5 @@
 //This is a project for lockers
-import {sendCloudMessageByRegistrationToken} from '../../module/firebase';
+import {userNotifier} from '../../module/notification';
 import {runKafkaProducer, createKafkaConf} from '../../module/kafka';
 import {connectAirtable, EnumAirtables, EnumOrderStatus} from '../../module/airtable';
 
@@ -8,17 +8,6 @@ const kafkaConf = createKafkaConf(KAFKA_BROKERS.split(','), KAFKA_USERNAME, KAFK
 
 let kafkaWriter:any = undefined;
 
-
-const notifyOrderToUser = async(airtable:any, orderId:string, status:EnumOrderStatus, contactType:string, contactInfo:string) => {
-  if(contactType === 'Representative') {
-    const message = {
-      "orderid": orderId,
-      "status": status
-    }
-    const pusherToken = await airtable.findPusherToken();
-    sendCloudMessageByRegistrationToken(message, pusherToken);
-  }
-}
 
 const locker = {
   monitor: async function(req, res) {
@@ -41,6 +30,7 @@ const locker = {
     }
 
     kafkaWriter(_createMessage(req.body));
+
 
     res.json({'status': 'initiated writer'});
   },
@@ -67,7 +57,7 @@ const locker = {
       }
       res.json({'status': 'ok'});
 
-      notifyOrderToUser(airtable, orderId, EnumOrderStatus.ORDER_PLACED, contactType, contactInfo);
+      userNotifier(airtable, orderId, EnumOrderStatus.ORDER_PLACED, contactType, contactInfo);
     });
   },
   getAvailOrders: async function(req, res) {

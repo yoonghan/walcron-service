@@ -2,7 +2,7 @@
   "name": "walcron-service",
   "version": "0.0.1",
   "description": "A backend using javascript.",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "start": "tsc && node ."
   },
@@ -14,6 +14,7 @@
     "express": "^4.17.1",
     "firebase-admin": "^9.2.0",
     "kafkajs": "^1.14.0",
+    "nodemailer": "^6.4.13",
     "pusher": "^3.0.1",
     "typescript": "^4.0.3"
   },

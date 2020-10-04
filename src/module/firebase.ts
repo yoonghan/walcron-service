@@ -5,9 +5,13 @@ admin.initializeApp({
   credential: admin.credential.cert((serviceAccount as any))
 });
 
-export function sendCloudMessageByRegistrationToken(value:any, registrationToken:string) {
+export function sendCloudMessageByRegistrationToken(value:any, registrationToken:string, title:string, body:string) {
   var message = {
     data: {...value},
+    notification: {
+      title: title,
+      body: body
+    },
     token: registrationToken
   };
   admin.messaging().send(message)
