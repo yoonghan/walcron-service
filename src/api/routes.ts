@@ -43,7 +43,8 @@ module.exports = function(app) {
         options: general.preflight
       },
       '/locker/users/:userid/notification': {
-        put: locker.updateUserNotification
+        put: locker.updateUserNotification,
+        options: general.preflight
       }
     }
    });

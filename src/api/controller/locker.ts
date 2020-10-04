@@ -87,7 +87,6 @@ const locker = {
   updateUserNotification: async function(req, res) {
     const userId = req.params.userid;
     const pushNotificationToken = req.body.push_notification_token;
-
     const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE} = process.env;
     const airtable = connectAirtable(AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE);
 
