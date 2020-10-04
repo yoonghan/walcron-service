@@ -5,8 +5,13 @@ import general from './controller/general';
 import root from './controller/root';
 import locker from './controller/locker';
 
-var corsOptions = {
-  origin: process.env.ALLOWED_CROSS_ORIGIN,
+var webCorsOptions = {
+  origin: process.env.ALLOWED_CROSS_ORIGIN_WEB,
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+
+var appCorsOptions = {
+  origin: process.env.ALLOWED_CROSS_ORIGIN_APP,
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
@@ -19,7 +24,13 @@ module.exports = function(app) {
           app.map(a[key], route + key);
           break;
         case 'function':
-          app[key](route, cors(corsOptions), a[key]);
+          if(route.startsWith('/app')) {
+            app[key](route, cors(appCorsOptions), a[key]);
+          }
+          else {
+            app[key](route, cors(webCorsOptions), a[key]);
+          }
+
           break;
       }
     }
@@ -41,7 +52,9 @@ module.exports = function(app) {
         get: locker.getAvailOrders,
         post: locker.placeOrder,
         options: general.preflight
-      },
+      }
+    },
+    '/app/api': {
       '/locker/users/:userid/notification': {
         put: locker.updateUserNotification,
         options: general.preflight
