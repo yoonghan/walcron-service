@@ -38,6 +38,7 @@ const locker = {
     const orderId = req.body.order_id;
     const contactType = req.body.contact_type;
     const contactInfo = req.body.contact_info;
+    const partnerId = req.body.partnerid;
     const businessPartnerId = req.params.businesspartnerid;
 
     const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE} = process.env;
@@ -57,7 +58,7 @@ const locker = {
       }
       res.json({'status': 'ok'});
 
-      userNotifier(airtable, orderId, EnumOrderStatus.ORDER_PLACED, contactType, contactInfo);
+      userNotifier(airtable, partnerId, orderId, EnumOrderStatus.ORDER_PLACED, contactType, contactInfo);
     });
   },
   getAvailOrders: async function(req, res) {
@@ -86,6 +87,20 @@ const locker = {
       res.json({'status': 'ok'})
     }
     catch(err) {
+      res.status(404).json({'status': 'fail'});
+    }
+  },
+  getUserOrders: async function(req, res) {
+    const userId = req.params.userid;
+    const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE} = process.env;
+    const airtable = connectAirtable(AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE);
+    try {
+      const orders = await airtable.findRepresentativeOrders(userId);
+
+      res.json({'status': 'ok', 'orders': orders})
+    }
+    catch(err) {
+      console.log(err, 'err');
       res.status(404).json({'status': 'fail'});
     }
   }

@@ -58,6 +58,10 @@ module.exports = function(app) {
       '/locker/users/:userid/notification': {
         put: locker.updateUserNotification,
         options: general.preflight
+      },
+      '/locker/users/:userid/orders': {
+        get: locker.getUserOrders,
+        options: general.preflight
       }
     }
    });

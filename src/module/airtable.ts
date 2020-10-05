@@ -111,6 +111,30 @@ export function connectAirtable (apiKey:string, baseKey:string) {
     })
   )
 
+  const _findRepresentativeOrders = async (representativeId:string) => (
+    new Promise((resolve, reject) => {
+      base(EnumAirtables.ORDER).select({
+        pageSize: 20,
+        view: "Grid view",
+        filterByFormula: `AND({Contact Type}='Representative', {Contact Info}=${representativeId})`
+      }).firstPage(function(err, records) {
+        if(err) {
+          reject(err);
+        }
+        else {
+          const results = records.map(record => ({
+            orderId: record.get("Order Id"),
+            status: record.get("Status"),
+            createdDateTime: record.get("Created Date"),
+            lastModifiedDateTime: record.get("Last Modified Date"),
+            partnerId: record.get("Partner Id")
+          }));
+          resolve(results);
+        }
+      });
+    })
+  )
+
   const _findRepresentativeInfo = async (representativeId:string) => (
     new Promise((resolve, reject) => {
       base(EnumAirtables.REPRESENTATIVE).select({
@@ -188,6 +212,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
     getAvailableOrders: _getAllAvailableOrders,
     updateOrder: _updateOrder,
     findRepresentativeInfo: _findRepresentativeInfo,
+    findRepresentativeOrders: _findRepresentativeOrders,
     updateRepresentativeToken: _updateRepresentativeToken
   };
 }

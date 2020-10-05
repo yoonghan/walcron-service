@@ -33,7 +33,7 @@ async function startKafkaMonitor(){
         try{
           const response = await airtable.updateOrder(messageInJson.partnerId, messageInJson.orderId, EnumOrderStatus.READY);
 
-          userNotifier(airtable, messageInJson.orderId, EnumOrderStatus.READY, (response as any).contactType, (response as any).contactInfo);
+          userNotifier(airtable, messageInJson.partnerId, messageInJson.orderId, EnumOrderStatus.READY, (response as any).contactType, (response as any).contactInfo);
         }
         catch(err) {
           console.error('error');
