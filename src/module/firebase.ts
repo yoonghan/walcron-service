@@ -12,6 +12,11 @@ export function sendCloudMessageByRegistrationToken(value:any, registrationToken
       title: title,
       body: body
     },
+    webpush: {
+      "fcm_options": {
+        "link": "https://app.walcron.com/locker"
+      }
+    }
     token: registrationToken
   };
   admin.messaging().send(message)

@@ -8,6 +8,11 @@ npm install
 npm run start
 ```
 
+# GCM troubleshoot
+1. chrome://gcm-internals in crome browser, you can see debug messages for GCM.
+2. Read this https://firebase.google.com/docs/cloud-messaging/js/receive
+3. Notificationclick did not work for FCM.
+
 ## From Glitch - Your Project
 
 On the front-end,
