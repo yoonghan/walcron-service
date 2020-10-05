@@ -21,6 +21,7 @@ On the front-end,
 - `public/client.js` is the javacript that runs when you load the webpage
 - `public/style.css` is the styles for `views/index.html`
 - Drag in `assets`, like images or music, to add them to your project
+- Because Glitch supports only .env, manually create the file .data/locker-firebase.json
 
 On the back-end,
 

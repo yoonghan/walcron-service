@@ -16,7 +16,7 @@ export function sendCloudMessageByRegistrationToken(value:any, registrationToken
       "fcm_options": {
         "link": "https://app.walcron.com/locker"
       }
-    }
+    },
     token: registrationToken
   };
   admin.messaging().send(message)
