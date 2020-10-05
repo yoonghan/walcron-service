@@ -14,7 +14,7 @@ export function sendCloudMessageByRegistrationToken(value:any, registrationToken
     },
     webpush: {
       fcmOptions: {
-        link: "https://app.walcron.com/locker"
+        link: process.env.NOTIFICATION_OPEN_URL
       }
     },
     token: registrationToken

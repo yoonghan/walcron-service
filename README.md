@@ -11,7 +11,6 @@ npm run start
 # GCM troubleshoot
 1. chrome://gcm-internals in crome browser, you can see debug messages for GCM.
 2. Read this https://firebase.google.com/docs/cloud-messaging/js/receive
-3. Notificationclick did not work for FCM.
 
 ## From Glitch - Your Project
 
@@ -21,7 +20,8 @@ On the front-end,
 - `public/client.js` is the javacript that runs when you load the webpage
 - `public/style.css` is the styles for `views/index.html`
 - Drag in `assets`, like images or music, to add them to your project
-- Because Glitch supports only .env, manually create the file .data/locker-firebase.json
+- All environment settings are located in .env which is not published.
+- `.data` is a hidden folder. To access, login to glitch, use the terminal and do `cd .data && ls`
 
 On the back-end,
 
