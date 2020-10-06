@@ -1,4 +1,6 @@
 //This is a project for lockers
+import { PUSHER } from '../../module/const';
+import {pushPusherMessage} from '../../module/pusher';
 import {userNotifier} from '../../module/notification';
 import {runKafkaProducer, createKafkaConf} from '../../module/kafka';
 import {connectAirtable, EnumAirtables, EnumOrderStatus} from '../../module/airtable';
@@ -7,7 +9,6 @@ const {KAFKA_BROKERS, KAFKA_USERNAME, KAFKA_PASSWORD, KAFKA_TOPIC_PREFIX, KAFKA_
 const kafkaConf = createKafkaConf(KAFKA_BROKERS.split(','), KAFKA_USERNAME, KAFKA_PASSWORD);
 
 let kafkaWriter:any = undefined;
-
 
 const locker = {
   monitor: async function(req, res) {
@@ -38,7 +39,7 @@ const locker = {
     const orderId = req.body.order_id;
     const contactType = req.body.contact_type;
     const contactInfo = req.body.contact_info;
-    const partnerId = req.body.partnerid;
+    const partnerId = req.params.partnerid;
     const businessPartnerId = req.params.businesspartnerid;
 
     const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE} = process.env;
@@ -58,6 +59,7 @@ const locker = {
       }
       res.json({'status': 'ok'});
 
+      pushPusherMessage(PUSHER.orderEvent, JSON.stringify({"order_id":orderId, "status": EnumOrderStatus.ORDER_PLACED}));
       userNotifier(airtable, partnerId, orderId, EnumOrderStatus.ORDER_PLACED, contactType, contactInfo);
     });
   },

@@ -61,7 +61,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
           maxRecords: 50,
           pageSize: 50,
           view: "Grid view",
-          filterByFormula: `AND({Status}='${EnumOrderStatus.ORDER_PLACED}', {Business Partner Id} = '${partnerId}')`
+          filterByFormula: `AND(OR({Status}='${EnumOrderStatus.ORDER_PLACED}',{Status}='${EnumOrderStatus.READY}'), {Business Partner Id} = '${partnerId}')`
       }).firstPage(function(err, records) {
         if(err) {
           reject('no');

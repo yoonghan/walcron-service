@@ -3,6 +3,8 @@ export const PUSHER = {
   event: "walcron_evt_push",
   channel_prefix: "wal_",
   //channel: "walcron_c",   //Deprecated - Channel is based on token returned.
-  endpoint: "/api/pusherauth"
+  endpoint: "/api/pusherauth",
+  lockEvent: "lock_event",
+  orderEvent: "order_event"
 }
 export const ANDROID_PACKAGE_NAME = "com.walcron.web"
