@@ -1,4 +1,5 @@
-import {EnumOrderStatus, EnumAirtables, connectAirtable}  from '../../module/airtable';
+import {EnumAirtables, connectAirtable}  from '../../module/airtable';
+import {EnumOrderStatus} from '../../definition/enum';
 
 const persistence = (function () {
   function initialize() {

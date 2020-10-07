@@ -1,5 +1,7 @@
 import Airtable from 'airtable';
 import {randomGenPIN} from './util';
+import {T_ORDER_CONTACT_TYPE} from '../definition/type';
+import {EnumOrderStatus} from '../definition/enum';
 
 export enum EnumAirtables {
   ORDER = "Order",
@@ -7,15 +9,6 @@ export enum EnumAirtables {
   LOCK_LOG = "Lock Log",
   REPRESENTATIVE = "Representative"
 };
-
-export enum EnumOrderStatus {
-  ORDER_PLACED = "Order Placed",
-  READY = "Ready",
-  TAKEN = "Taken",
-  DELIVERED = "Delivered"
-};
-
-export type T_ORDER_CONTACT_TYPE = "Push Notification"|"Email"|"SMS"|"Representative";
 
 export function connectAirtable (apiKey:string, baseKey:string) {
   const base = new Airtable({apiKey: apiKey}).base(baseKey);
@@ -233,9 +226,9 @@ export function connectAirtable (apiKey:string, baseKey:string) {
         {
           const {email, sms, pushertoken, preference} = (await _findRepresentativeInfo(contactInfo)) as any;
           let userContactInfo = '';
-          let userContactType = preference;
+          let userContactType = (preference as T_ORDER_CONTACT_TYPE);
 
-          switch(preference) {
+          switch(userContactType) {
             case 'SMS':
               userContactInfo = sms;
               break;

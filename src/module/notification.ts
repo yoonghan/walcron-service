@@ -1,8 +1,9 @@
 import {sendEmail} from './gmail';
 import firebase from './firebase';
-import {EnumOrderStatus} from './airtable';
+import {EnumOrderStatus} from '../definition/enum';
+import {T_ORDER_CONTACT_TYPE} from '../definition/type';
 
-export const userNotifier = async(partnerId:string, orderId:string, status:EnumOrderStatus, contactType:string, contactInfo:string) => {
+export const userNotifier = async(partnerId:string, orderId:string, status:EnumOrderStatus, contactType:T_ORDER_CONTACT_TYPE, contactInfo:string) => {
   switch(contactType) {
     case 'Push Notification':
       const pusherMessage = {

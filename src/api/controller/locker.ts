@@ -3,6 +3,7 @@ import publishsubscribe from "./publishsubscribe";
 import persistance from "./persistance";
 import order from "./order";
 import {mockResponseApi} from "./_genericapi";
+import {EnumLockStatus} from "../../definition/enum";
 
 const locker = {
   monitor: async function(req, res) {
@@ -37,7 +38,7 @@ const locker = {
     }
 
     publishsubscribe.writeLock(lockReq, mockResponseApi());
-    if(req.body.state === 'lock') {
+    if(req.body.state === EnumLockStatus.LOCK) {
       order.readyOrder(orderReq, mockResponseApi());
     }
     else {
@@ -64,6 +65,9 @@ const locker = {
     catch(err) {
       res.status(400).json({'status': 'fail'});
     }
+  },
+  getLockState: async function(req, res) {
+
   }
 };
 

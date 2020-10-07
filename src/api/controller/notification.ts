@@ -3,6 +3,7 @@ import {createPusher, pushPusherMessage} from "../../module/pusher";
 import {mockResponseApi} from "./_genericapi";
 import {PUSHER} from "../../module/const";
 import {userNotifier} from "../../module/notification";
+import {T_ORDER_CONTACT_TYPE} from "../../definition/type";
 
 const notification = (function() {
 
@@ -20,8 +21,9 @@ const notification = (function() {
           pushPusherMessage(pusher, PUSHER.orderEvent, JSON.stringify(req.body));
           break;
         case "Ready":
-          const {order_id, status, contact_type, contact_info} = req.body
-          userNotifier(req.params.partnerid, order_id, status, contact_type, contact_info);
+          const {order_id, status, contact_type, contact_info} = req.body;
+          const _contactType = contact_type as T_ORDER_CONTACT_TYPE;
+          userNotifier(req.params.partnerid, order_id, status, _contactType, contact_info);
           break;
       }
 
