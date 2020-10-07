@@ -40,6 +40,9 @@ const publishsubscribe = (function () {
   initializeLock();
   initializeOrder();
 
+  const _generateLockKey = (lockerId:string, orderId:string, partnerId:string) => (`${lockerId}-${orderId}-${partnerId}`)
+  const _generateOrderKey = (orderId:string, partnerId:string) => (`${orderId}-${partnerId}`)
+
   return {
     writeLock: async function(req, res) {
       if(typeof kafkaLockWriter === 'undefined'){
@@ -56,7 +59,9 @@ const publishsubscribe = (function () {
           businessPartnerId: req.params.businesspartnerid,
           triggerTime: new Date().toISOString()
         }
-        kafkaLockWriter(JSON.stringify(message));
+        kafkaLockWriter(
+          _generateLockKey(req.body.locker_id, req.body.order_id, req.params.partnerid),
+          JSON.stringify(message));
         res.json({'status': 'ok'});
       }
     },
@@ -75,7 +80,7 @@ const publishsubscribe = (function () {
           businessPartnerId: req.params.businesspartnerid,
           triggerTime: new Date().toISOString()
         }
-        kafkaOrderWriter(JSON.stringify(message));
+        kafkaOrderWriter(_generateOrderKey(req.body.order_id, req.params.partnerid), JSON.stringify(message));
         res.json({'status': 'ok'});
       }
     }

@@ -25,11 +25,11 @@ export async function runKafkaProducer(kafkaClient:any, prefix:string) {
   const producer = kafkaClient.producer();
   await producer.connect();
 
-  const writer = (msg:string) => {
+  const writer = (key: string, msg:string) => {
     producer.send(
       {
         topic: _getTopic(prefix),
-        messages: [{value: msg}]
+        messages: [{key: key, value: msg}]
       }
     );
   }
