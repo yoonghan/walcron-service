@@ -1,24 +1,8 @@
-import {sendEmail} from '../module/gmail';
-import {sendCloudMessageByRegistrationToken} from '../module/firebase';
-import {EnumOrderStatus} from '../module/airtable';
+import {sendEmail} from './gmail';
+import firebase from './firebase';
+import {EnumOrderStatus} from './airtable';
 
-export const userNotifier = async(airtable:any, partnerId:string, orderId:string, status:EnumOrderStatus, contactType:string, contactInfo:string) => {
-  if(contactType === 'Representative') {
-    const {email, sms, pushertoken, preference} = await airtable.findRepresentativeInfo(contactInfo);
-    contactType = preference;
-    switch(preference) {
-      case 'Email':
-        contactInfo = email;
-        break;
-      case 'SMS':
-        contactInfo = sms;
-        break;
-      case 'Push Notification':
-        contactInfo = pushertoken;
-        break;
-    }
-  }
-
+export const userNotifier = async(partnerId:string, orderId:string, status:EnumOrderStatus, contactType:string, contactInfo:string) => {
   switch(contactType) {
     case 'Push Notification':
       const pusherMessage = {
@@ -26,7 +10,7 @@ export const userNotifier = async(airtable:any, partnerId:string, orderId:string
         "status": status,
         "partnerId": partnerId
       }
-      sendCloudMessageByRegistrationToken(pusherMessage, contactInfo, `Order ${orderId} is ${status}`, `Your ${orderId} is ${status} for pick up, please go to the respective counter to pick it up.`);
+      firebase.sendCloudMessageByRegistrationToken(pusherMessage, contactInfo, `Order ${orderId} is ${status}`, `Your ${orderId} is ${status} for pick up, please go to the respective counter to pick it up.`);
       break;
     case 'Email':
       const subject = `Order ${orderId} is ${status}`;

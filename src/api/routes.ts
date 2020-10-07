@@ -4,6 +4,7 @@ import general from './controller/general';
 
 import root from './controller/root';
 import locker from './controller/locker';
+import order from './controller/order';
 
 var webCorsOptions = {
   origin: process.env.ALLOWED_CROSS_ORIGIN_WEB,
@@ -49,8 +50,8 @@ module.exports = function(app) {
         options: general.preflight
       },
       '/locker/order/:businesspartnerid/:partnerid': {
-        get: locker.getAvailOrders,
-        post: locker.placeOrder,
+        get: order.getAvailableOrders,
+        post: order.placeOrder,
         options: general.preflight
       }
     },
@@ -60,7 +61,7 @@ module.exports = function(app) {
         options: general.preflight
       },
       '/locker/users/:userid/orders': {
-        get: locker.getUserOrders,
+        get: order.getUserOrders,
         options: general.preflight
       }
     }

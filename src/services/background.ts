@@ -1,59 +1,161 @@
-
-import {userNotifier} from '../module/notification';
 import {runKafkaConsumer, createKafkaConf} from '../module/kafka';
-import {pushPusherMessage} from '../module/pusher';
-import {connectAirtable, EnumAirtables, EnumOrderStatus} from '../module/airtable';
-import {PUSHER} from '../module/const';
+import {IOrderMessage, ILockMessage} from '../api/controller/publishsubscribe';
+import {mockResponseApi} from '../api/controller/_genericapi';
+import notification from '../api/controller/notification';
+import persistance from '../api/controller/persistance';
 
-const {KAFKA_BROKERS, KAFKA_USERNAME, KAFKA_PASSWORD, KAFKA_TOPIC_PREFIX, KAFKA_GROUP_ID} = process.env;
-const kafkaConf = createKafkaConf(KAFKA_BROKERS.split(','), KAFKA_USERNAME, KAFKA_PASSWORD);
+const {KAFKA_LOCK_BROKERS, KAFKA_LOCK_USERNAME, KAFKA_LOCK_PASSWORD, KAFKA_LOCK_TOPIC_PREFIX, KAFKA_LOCK_GROUP_ID} = process.env;
+const kafkaLockConf = createKafkaConf(KAFKA_LOCK_BROKERS.split(','), KAFKA_LOCK_USERNAME, KAFKA_LOCK_PASSWORD);
 
-const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE} = process.env;
-const airtable = connectAirtable(AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE);
+const {KAFKA_ORDER_BROKERS, KAFKA_ORDER_USERNAME, KAFKA_ORDER_PASSWORD, KAFKA_ORDER_TOPIC_PREFIX, KAFKA_ORDER_GROUP_ID} = process.env;
+const kafkaOrderConf = createKafkaConf(KAFKA_ORDER_BROKERS.split(','), KAFKA_ORDER_USERNAME, KAFKA_ORDER_PASSWORD);
 
-async function startKafkaMonitor(){
+async function startKafkaOrderMonitor(){
   const _writer = () => async (message:string) => {
     try{
-      const messageInJson = JSON.parse(message);
+      const messageInJson:IOrderMessage = JSON.parse(message) as IOrderMessage;
+      switch(messageInJson.state) {
+        case "Order Placed":
+          {
+            const req = {
+              body: {
+                order_id: messageInJson.orderId,
+                contact_type: messageInJson.contactType,
+                contact_info: messageInJson.contactInfo,
+                state: messageInJson.state,
+                trigger_datetime: messageInJson.triggerTime
+              },
+              params: {
+                partnerid: messageInJson.partnerId,
+                businesspartnerid: messageInJson.businessPartnerId
+              }
+            }
+            await persistance.createOrder(req, mockResponseApi());
+            persistance.logCreateOrUpdateOrder(req, mockResponseApi());
+            notification.notifyOrderEvent({
+              body: {
+                order_id: messageInJson.orderId,
+                status: messageInJson.state
+              }
+            }, mockResponseApi());
+          }
+          break;
+        case "Unready":
+          {
+            const req = {
+              body: {
+                order_id: messageInJson.orderId,
+                state: "Order Placed",
+                trigger_datetime: messageInJson.triggerTime
+              },
+              params: {
+                partnerid: messageInJson.partnerId,
+                businesspartnerid: messageInJson.businessPartnerId
+              }
+            }
+            await persistance.updateOrder(req, mockResponseApi());
+            persistance.logCreateOrUpdateOrder(req, mockResponseApi());
+            const contactInformationResponse = mockResponseApi();
+            await persistance.getContactInformation(req, contactInformationResponse);
 
-      airtable.create(EnumAirtables.LOCK_LOG, [
-        airtable.buildLockLog(
-            messageInJson.orderId,
-            messageInJson.businessPartnerId,
-            messageInJson.lockerid,
-            messageInJson.state,
-            messageInJson.triggerTime
-          )
-      ]);
+            notification.notifyOrderEvent({
+              body: {
+                order_id: messageInJson.orderId,
+                status: "Misplaced",
+                contact_type: contactInformationResponse.getJson().contact.contact_type,
+                contact_info: contactInformationResponse.getJson().contact.contact_info
+              },
+              params: {
+                partnerid: messageInJson.partnerId,
+                businesspartnerid: messageInJson.businessPartnerId
+              }
+            }, mockResponseApi());
+          }
+          break;
+        case "Ready":
+          {
+            const req = {
+              body: {
+                order_id: messageInJson.orderId,
+                state: messageInJson.state,
+                trigger_datetime: messageInJson.triggerTime
+              },
+              params: {
+                partnerid: messageInJson.partnerId,
+                businesspartnerid: messageInJson.businessPartnerId
+              }
+            }
 
-      if(messageInJson.state === 'lock') {
-        try{
-          const response = await airtable.updateOrder(messageInJson.partnerId, messageInJson.orderId, EnumOrderStatus.READY);
+            await persistance.updateOrder(req, mockResponseApi());
+            persistance.logCreateOrUpdateOrder(req, mockResponseApi());
+            const contactInformationResponse = mockResponseApi();
+            await persistance.getContactInformation(req, contactInformationResponse);
 
-          userNotifier(airtable, messageInJson.partnerId, messageInJson.orderId, EnumOrderStatus.READY, (response as any).contactType, (response as any).contactInfo);
+            notification.notifyOrderEvent({
+              body: {
+                order_id: messageInJson.orderId,
+                status: messageInJson.state,
+                contact_type: contactInformationResponse.getJson().contact.contact_type,
+                contact_info: contactInformationResponse.getJson().contact.contact_info
+              },
+              params: {
+                partnerid: messageInJson.partnerId,
+                businesspartnerid: messageInJson.businessPartnerId
+              }
+            }, mockResponseApi());
         }
-        catch(err) {
-          console.error('error');
-        }
-      }
-      else {
-        airtable.updateOrder(messageInJson.partnerId, messageInJson.orderId, EnumOrderStatus.ORDER_PLACED);
+        break;
       }
     }
     catch(err) {
       //skip
       console.error(err, 'writer');
     }
-
-    pushPusherMessage(PUSHER.lockEvent, message);
   };
 
-  runKafkaConsumer(kafkaConf, KAFKA_TOPIC_PREFIX, KAFKA_GROUP_ID, _writer());
+  runKafkaConsumer(kafkaOrderConf, KAFKA_ORDER_TOPIC_PREFIX, KAFKA_ORDER_GROUP_ID, _writer());
+  console.log("kafka order consumer and writer will run in background - forever!");
+}
 
-  console.log("kafka consumer and writer will run in background - forever!");
+async function startKafkaLockMonitor(){
+  const _writer = () => async (message:string) => {
+    try{
+      const messageInJson:ILockMessage = JSON.parse(message) as ILockMessage;
+      const req = {
+        body: {
+          origin: messageInJson.origin,
+          order_id: messageInJson.orderId,
+          locker_id: messageInJson.lockerId,
+          state: messageInJson.state,
+          trigger_datetime: messageInJson.triggerTime
+        },
+        params: {
+          partnerId: messageInJson.partnerId,
+          businesspartnerid: messageInJson.businessPartnerId
+        }
+      };
+      persistance.logLock(req, mockResponseApi());
+      notification.notifyLockEvent({
+        body: {
+          orderId: messageInJson.orderId,
+          lockerId: messageInJson.lockerId,
+          state: messageInJson.state
+        }
+      }, mockResponseApi());
+    }
+    catch(err) {
+      //skip
+      console.error(err, 'writer');
+    }
+  };
+
+  runKafkaConsumer(kafkaLockConf, KAFKA_LOCK_TOPIC_PREFIX, KAFKA_LOCK_GROUP_ID, _writer());
+
+  console.log("kafka lock consumer and writer will run in background - forever!");
 }
 
 //Run services.
 module.exports = function() {
-  startKafkaMonitor();
+  startKafkaLockMonitor();
+  startKafkaOrderMonitor();
 }
