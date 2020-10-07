@@ -97,7 +97,7 @@ const order = {
     try {
       const response = mockResponseApi();
       await persistance.findRepresentativeOrders(request, response);
-      res.json({'status': 'ok', 'orders': response.getJson() });
+      res.json({'status': 'ok', 'orders': response.getJson().orders });
     } catch(err) {
       res.status(404).json({'status': 'no records'});
     }
