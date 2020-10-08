@@ -3,7 +3,7 @@ const root = {
     res.end();
   },
   monitor: async function(req, res) {
-    res.json({'status': 'initiated reader'});
+    res.json({'status': 'ok'});
   }
 };
 
