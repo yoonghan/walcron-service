@@ -45,12 +45,15 @@ module.exports = function(app) {
       '/locker/monitor': {
         get: locker.monitor
       },
-      '/locker/trigger/:businesspartnerid/:partnerid': {
+      '/locker/:businesspartnerid/:partnerid/trigger': {
         post: locker.trigger,
         options: general.preflight
       },
       '/locker/:businesspartnerid/:partnerid/orders': {
         get: order.getAvailableOrders,
+        options: general.preflight
+      },
+      '/locker/:businesspartnerid/:partnerid/order': {
         post: order.placeOrder,
         options: general.preflight
       },
