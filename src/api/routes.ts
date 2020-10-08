@@ -42,6 +42,10 @@ module.exports = function(app) {
      get: root.index
     },
     '/api': {
+      '/monitor': {
+        get: general.monitor,
+        options: general.preflight
+      },
       '/locker/monitor': {
         get: locker.monitor
       },
