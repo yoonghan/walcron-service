@@ -67,6 +67,20 @@ const locker = {
     }
   },
   getLockState: async function(req, res) {
+    const lockReq = {
+      params: {
+        partnerid: req.params.partnerid,
+        businesspartnerid: req.params.businesspartnerid
+      }
+    }
+    try {
+      const response = mockResponseApi();
+      await persistance.getLockStatus(lockReq, response);
+      res.json({'status': 'ok', 'locks': response.getJson().locks })
+    }
+    catch(err) {
+      res.status(400).json({'status': 'fail'});
+    }
 
   }
 };

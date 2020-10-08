@@ -1,17 +1,34 @@
 import Airtable from 'airtable';
 import {randomGenPIN} from './util';
 import {T_ORDER_CONTACT_TYPE} from '../definition/type';
-import {EnumOrderStatus} from '../definition/enum';
+import {EnumOrderStatus, EnumLockStatus} from '../definition/enum';
 
 export enum EnumAirtables {
   ORDER = "Order",
   ORDER_LOG = "Order Log",
+  LOCK = "Lock",
   LOCK_LOG = "Lock Log",
   REPRESENTATIVE = "Representative"
 };
 
 export function connectAirtable (apiKey:string, baseKey:string) {
   const base = new Airtable({apiKey: apiKey}).base(baseKey);
+
+  const _buildLock = (
+    businessPartnerId: string,
+    lockerId: string,
+    status: string
+  ) => (
+    {
+      "fields":{
+        "Locker Id": lockerId,
+        "Business Partner Id": [businessPartnerId],
+        "Order Id": "",
+        "PIN": "",
+        "Status": status
+      }
+    }
+  )
 
   const _buildLockLog = (
     orderId: string,
@@ -65,6 +82,31 @@ export function connectAirtable (apiKey:string, baseKey:string) {
     }
   );
 
+  const _getAllCurrentLockStatus = async (partnerId:string) => {
+    return new Promise((resolve, reject) => {
+      base(EnumAirtables.LOCK).select({
+          maxRecords: 20,
+          pageSize: 20,
+          view: "Grid view",
+          filterByFormula: `{Business Partner Id} = '${partnerId}'`
+      }).firstPage(function(err, records) {
+        if(err) {
+          reject('no');
+        }
+        else {
+          const results = records.map(record => (
+            {
+              lockerId: record.get('Locker Id'),
+              orderId: record.get('Order Id'),
+              status: record.get('Status')
+            }
+          ));
+          resolve(results);
+        }
+      });
+    });
+  }
+
   const _getAllAvailableOrders = async (partnerId:string) => {
     return new Promise((resolve, reject) => {
       base(EnumAirtables.ORDER).select({
@@ -116,6 +158,38 @@ export function connectAirtable (apiKey:string, baseKey:string) {
               "contactInfo": records[0].get('Contact Info')
             }
           );
+        }
+      });
+    })
+  )
+
+  const _updateLock = async (lockerId: string, partnerId:string, orderId:string, status:EnumLockStatus) => (
+    new Promise((resolve, reject) => {
+      base(EnumAirtables.LOCK).select({
+          pageSize: 1,
+          view: "Grid view",
+          filterByFormula: `AND({Locker Id}='${lockerId}', {Business Partner Id} = '${partnerId}')`
+      }).firstPage(function(err, records) {
+        if(err || records.length !== 1) {
+          console.error(err, 'retrieve update error');
+          reject('retrieve error');
+        }
+        else {
+          base(EnumAirtables.LOCK).update([
+            {
+              "id": records[0].id,
+              "fields": {
+                "Order Id": orderId,
+                "Status": status,
+                "PIN": randomGenPIN()
+              }
+            }
+            ], function(err, records) {
+              if (err) {
+                console.error(err, 'update error')
+              }
+              resolve({})
+            });
         }
       });
     })
@@ -275,7 +349,9 @@ export function connectAirtable (apiKey:string, baseKey:string) {
     buildOrder: _buildOrder,
     buildOrderLog: _buildOrderLog,
     getAvailableOrders: _getAllAvailableOrders,
+    getCurrentLockStatuses: _getAllCurrentLockStatus,
     updateOrder: _updateOrder,
+    updateLock: _updateLock,
     findRepresentativeInfo: _findRepresentativeInfo,
     findContactInformation: _getContactInformation,
     findRepresentativeOrders: _findRepresentativeOrders,

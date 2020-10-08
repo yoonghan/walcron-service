@@ -1,5 +1,5 @@
 import {EnumAirtables, connectAirtable}  from '../../module/airtable';
-import {EnumOrderStatus} from '../../definition/enum';
+import {EnumOrderStatus, EnumLockStatus} from '../../definition/enum';
 
 const persistence = (function () {
   function initialize() {
@@ -90,6 +90,17 @@ const persistence = (function () {
         res.json({'status': 'fail'});
       }
     },
+    getLockStatus: async function(req, res) {
+      const {partnerid} = req.params;
+      try {
+        const locks = await airtable.getCurrentLockStatuses(partnerid)
+        res.json({'status': 'ok', 'locks': locks})
+      }
+      catch(err) {
+        console.log(err, 'err');
+        res.json({'status': 'fail'});
+      }
+    },
     logLock: async function(req, res) {
       try {
         await airtable.create(EnumAirtables.LOCK_LOG, [
@@ -110,6 +121,15 @@ const persistence = (function () {
     updateOrder: async function(req, res) {
       try {
         await airtable.updateOrder(req.params.partnerid, req.body.order_id, req.body.state);
+        res.json({'status': 'ok'});
+      }
+      catch (err) {
+        res.json({'status': 'fail'});
+      }
+    },
+    updateLock: async function(req, res) {
+      try {
+        await airtable.updateLock(req.body.locker_id, req.params.partnerid, req.body.order_id, req.body.state);
         res.json({'status': 'ok'});
       }
       catch (err) {

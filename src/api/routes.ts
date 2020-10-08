@@ -49,9 +49,13 @@ module.exports = function(app) {
         post: locker.trigger,
         options: general.preflight
       },
-      '/locker/order/:businesspartnerid/:partnerid': {
+      '/locker/:businesspartnerid/:partnerid/orders': {
         get: order.getAvailableOrders,
         post: order.placeOrder,
+        options: general.preflight
+      },
+      '/locker/:businesspartnerid/:partnerid/locks': {
+        get: locker.getLockState,
         options: general.preflight
       }
     },

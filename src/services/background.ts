@@ -130,10 +130,11 @@ async function startKafkaLockMonitor(){
           trigger_datetime: messageInJson.triggerTime
         },
         params: {
-          partnerId: messageInJson.partnerId,
+          partnerid: messageInJson.partnerId,
           businesspartnerid: messageInJson.businessPartnerId
         }
       };
+      await persistance.updateLock(req, mockResponseApi());
       persistance.logLock(req, mockResponseApi());
       notification.notifyLockEvent({
         body: {
