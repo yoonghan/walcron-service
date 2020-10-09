@@ -67,6 +67,10 @@ module.exports = function(app) {
       }
     },
     '/app/api': {
+      '/monitor': {
+        get: general.monitor,
+        options: general.preflight
+      },
       '/locker/users/:userid/notification': {
         put: locker.updateUserNotification,
         options: general.preflight
