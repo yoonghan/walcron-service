@@ -10,10 +10,10 @@ const locker = {
     res.json({'status': 'initiated reader'});
   },
   getPin: async function(req, res) {
-    const orderId = req.body.order_id;
-    const partnerId = req.body.partner_id;
+    const orderId = req.params.orderid;
+    const partnerId = req.params.partnerid;
     const userid= req.params.userid;
-    const origin = req.params.env;
+    const origin = 'app';
 
     const unlockReq = {
       body: {
@@ -36,11 +36,13 @@ const locker = {
     }
   },
   triggerUnlock: async function(req, res) {
-    const orderId = req.body.order_id;
-    const partnerId = req.body.partner_id;
+
     const pin = req.body.pin;
+
+    const orderId = req.params.orderid;
+    const partnerId = req.params.partnerid;
     const userid= req.params.userid;
-    const origin = req.params.env;
+    const origin = "app";
 
     const unlockReq = {
       body: {
@@ -67,14 +69,15 @@ const locker = {
             body: {
               origin: origin,
               order_id: orderId,
-              locker_id: lockResponseInJson.info.locker_id,
+              locker_ids: lockResponseInJson.info.locker_ids,
               state: EnumLockStatus.UNLOCK
             },
             params: {
               partnerid: partnerId,
-              businesspartnerid: lockResponseInJson.info.business_partner_id
+              businesspartnerid: lockResponseInJson.info.business_partner_id[0]
             }
           }
+
           publishsubscribe.writeLock(lockReq, mockResponseApi());
           res.json({'status': 'ok'})
         }

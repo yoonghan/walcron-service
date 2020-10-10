@@ -15,7 +15,7 @@ export interface ILockMessage {
   orderId: string;
   businessPartnerId: string;
   partnerId: string;
-  lockerId: string;
+  lockerIds: Array<string>;
   state: string;
   triggerTime: string;
 }
@@ -50,10 +50,12 @@ const publishsubscribe = (function () {
         res.json({'status': 'fail'});
       }
       else {
+        const lockerIds = req.body.locker_id? [req.body.locker_id]: req.body.locker_ids;
+
         const message:ILockMessage = {
           origin: req.body.origin,
           orderId: req.body.order_id,
-          lockerId: req.body.locker_id,
+          lockerIds: lockerIds,
           state: req.body.state,
           partnerId: req.params.partnerid,
           businessPartnerId: req.params.businesspartnerid,

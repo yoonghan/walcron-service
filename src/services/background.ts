@@ -121,28 +121,31 @@ async function startKafkaLockMonitor(){
   const _writer = () => async (message:string) => {
     try{
       const messageInJson:ILockMessage = JSON.parse(message) as ILockMessage;
-      const req = {
-        body: {
-          origin: messageInJson.origin,
-          order_id: messageInJson.orderId,
-          locker_id: messageInJson.lockerId,
-          state: messageInJson.state,
-          trigger_datetime: messageInJson.triggerTime
-        },
-        params: {
-          partnerid: messageInJson.partnerId,
-          businesspartnerid: messageInJson.businessPartnerId
-        }
-      };
-      await persistance.updateLock(req, mockResponseApi());
-      persistance.logLock(req, mockResponseApi());
-      notification.notifyLockEvent({
-        body: {
-          orderId: messageInJson.orderId,
-          lockerId: messageInJson.lockerId,
-          state: messageInJson.state
-        }
-      }, mockResponseApi());
+
+      for(let lockerIdx=0; lockerIdx < messageInJson.lockerIds.length; lockerIdx++) {
+        const req = {
+          body: {
+            origin: messageInJson.origin,
+            order_id: messageInJson.orderId,
+            locker_id: messageInJson.lockerIds[lockerIdx],
+            state: messageInJson.state,
+            trigger_datetime: messageInJson.triggerTime
+          },
+          params: {
+            partnerid: messageInJson.partnerId,
+            businesspartnerid: messageInJson.businessPartnerId
+          }
+        };
+        await persistance.updateLock(req, mockResponseApi());
+        persistance.logLock(req, mockResponseApi());
+        notification.notifyLockEvent({
+          body: {
+            orderId: messageInJson.orderId,
+            lockerId: messageInJson.lockerIds[lockerIdx],
+            state: messageInJson.state
+          }
+        }, mockResponseApi());
+      }
     }
     catch(err) {
       //skip
