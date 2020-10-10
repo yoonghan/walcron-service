@@ -75,6 +75,11 @@ module.exports = function(app) {
         put: locker.updateUserNotification,
         options: general.preflight
       },
+      '/locker/users/:userid/unlock/:env': {
+        get: locker.getPin,
+        post: locker.triggerUnlock,
+        options: general.preflight
+      },
       '/locker/users/:userid/orders': {
         get: order.getUserOrders,
         options: general.preflight

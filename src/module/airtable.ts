@@ -98,7 +98,8 @@ export function connectAirtable (apiKey:string, baseKey:string) {
             {
               lockerId: record.get('Locker Id'),
               orderId: record.get('Order Id'),
-              status: record.get('Status')
+              status: record.get('Status'),
+              pin: record.get('PIN')
             }
           ));
           resolve(results);
@@ -142,8 +143,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
             {
               "id": records[0].id,
               "fields": {
-                "Status": status,
-                "PIN": randomGenPIN()
+                "Status": status
               }
             }
             ], function(err, records) {
@@ -274,6 +274,28 @@ export function connectAirtable (apiKey:string, baseKey:string) {
     })
   )
 
+  const _findOrderInformation = async (partnerId: string, orderId: string) => (
+    new Promise((resolve, reject) => {
+      base(EnumAirtables.ORDER).select({
+          pageSize: 1,
+          view: "Grid view",
+          filterByFormula: `AND({Order Id}='${orderId}', {Business Partner Id} = '${partnerId}')`
+      }).firstPage(function(err, records) {
+        if(err || records.length !== 1) {
+          console.error(err, 'retrieve update error');
+          reject('retrieve error');
+        }
+        else {
+          const response = {
+            contactType: records[0].get('Contact Type'),
+            contactInfo: records[0].get('Contact Info')
+          };
+          resolve(response);
+        }
+      });
+    })
+  )
+
   const _getContactInformation = async (partnerId: string, orderId: string) => {
     const orderQuery = new Promise((resolve, reject) => {
       base(EnumAirtables.ORDER).select({
@@ -321,13 +343,36 @@ export function connectAirtable (apiKey:string, baseKey:string) {
         }
         break;
       default:
-        console.log('foxxxurth' + contactType);
         return {
           contactInfo,
           contactType
         }
     }
   }
+
+  const _getLockerInformation = async (partnerId:string, orderId:string, origin:string) => (
+    new Promise((resolve, reject) => {
+      base(EnumAirtables.LOCK).select({
+          pageSize: 10,
+          view: "Grid view",
+          filterByFormula: `AND({Order Id}='${orderId}', {Business Partner Id} = '${partnerId}')`
+      }).firstPage(function(err, records) {
+        if(err || records.length < 1) {
+          console.error(err, 'retrieve error');
+          reject('retrieve error');
+        }
+        else {
+          const lockerIds = records.map(record => record.get('Locker Id'));
+          const result = {
+            pin: records[0].get('PIN'),
+            businessPartnerId: records[0].get('Business Partner Id'),
+            lockerIds: lockerIds
+          };
+          resolve(result);
+        }
+      });
+    })
+  )
 
   const defaultCallback = (err, records) => {
     if (err) {
@@ -353,8 +398,10 @@ export function connectAirtable (apiKey:string, baseKey:string) {
     updateOrder: _updateOrder,
     updateLock: _updateLock,
     findRepresentativeInfo: _findRepresentativeInfo,
+    findOrderInformation: _findOrderInformation,
     findContactInformation: _getContactInformation,
     findRepresentativeOrders: _findRepresentativeOrders,
-    updateRepresentativeToken: _updateRepresentativeToken
+    updateRepresentativeToken: _updateRepresentativeToken,
+    getLockerInformation: _getLockerInformation
   };
 }

@@ -149,6 +149,33 @@ const persistence = (function () {
       catch (err) {
         res.json({'status': 'fail'});
       }
+    },
+    getOrderInformation: async function(req, res) {
+      try {
+        const orderInformation:any = await airtable.findOrderInformation(req.params.partnerid, req.body.order_id);
+        res.json({'status': 'ok', 'info': {
+          contact_type: orderInformation.contactType,
+          contact_info: orderInformation.contactInfo
+        }});
+      }
+      catch (err) {
+        res.json({'status': 'fail'});
+      }
+    },
+    getLockerInformation: async function(req, res) {
+      try {
+        const lockerInformation:any = await airtable.getLockerInformation(req.params.partnerid, req.body.order_id, req.body.origin);
+        res.json({'status': 'ok', 'info':
+          {
+            pin: lockerInformation.pin,
+            business_partner_id: lockerInformation.businessPartnerId,
+            locker_ids: lockerInformation.lockerIds
+          }
+        });
+      }
+      catch (err) {
+        res.json({'status': 'fail'});
+      }
     }
   }
 })();
