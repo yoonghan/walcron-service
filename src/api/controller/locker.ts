@@ -79,6 +79,7 @@ const locker = {
           }
 
           publishsubscribe.writeLock(lockReq, mockResponseApi());
+          order.takenOrder(lockReq, mockResponseApi());
           res.json({'status': 'ok'})
         }
         else {

@@ -2,6 +2,7 @@ export enum EnumOrderStatus {
   ORDER_PLACED = "Order Placed",
   READY = "Ready",
   TAKEN = "Taken",
+  UNREADY = "Unready",
   DELIVERED = "Delivered"
 };
 

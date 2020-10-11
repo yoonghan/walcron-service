@@ -2,6 +2,7 @@
 import publishsubscribe from "./publishsubscribe";
 import persistance from "./persistance";
 import {mockResponseApi} from "./_genericapi";
+import {EnumOrderStatus} from "../../definition/enum";
 
 const order = {
   monitor: async function(req, res) {
@@ -15,7 +16,7 @@ const order = {
     const orderReq = {
       body: {
         order_id: orderId,
-        state: 'Unready'
+        state: EnumOrderStatus.UNREADY
       },
       params: {
         partnerid: partnerId,
@@ -35,7 +36,27 @@ const order = {
     const orderReq = {
       body: {
         order_id: orderId,
-        state: 'Ready'
+        state: EnumOrderStatus.READY
+      },
+      params: {
+        partnerid: partnerId,
+        businesspartnerid: businessPartnerId
+      }
+    }
+
+    publishsubscribe.writeOrder(orderReq, mockResponseApi());
+
+    res.json({'status': 'ready order'});
+  },
+  takenOrder: async function(req, res) {
+    const orderId = req.body.order_id;
+    const partnerId = req.params.partnerid;
+    const businessPartnerId = req.params.businesspartnerid;
+
+    const orderReq = {
+      body: {
+        order_id: orderId,
+        state: EnumOrderStatus.TAKEN
       },
       params: {
         partnerid: partnerId,
@@ -59,7 +80,7 @@ const order = {
         order_id: orderId,
         contact_type: contactType,
         contact_info: contactInfo,
-        state: 'Order Placed'
+        state: EnumOrderStatus.ORDER_PLACED
       },
       params: {
         partnerid: partnerId,
