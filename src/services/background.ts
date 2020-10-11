@@ -74,6 +74,7 @@ async function startKafkaOrderMonitor(){
           }
           break;
         case EnumOrderStatus.READY:
+        case EnumOrderStatus.TAKEN:
           {
             const req = {
               body: {
@@ -104,24 +105,6 @@ async function startKafkaOrderMonitor(){
                 businesspartnerid: messageInJson.businessPartnerId
               }
             }, mockResponseApi());
-        }
-        break;
-        case EnumOrderStatus.TAKEN:
-          {
-            const req = {
-              body: {
-                order_id: messageInJson.orderId,
-                state: messageInJson.state,
-                trigger_datetime: messageInJson.triggerTime
-              },
-              params: {
-                partnerid: messageInJson.partnerId,
-                businesspartnerid: messageInJson.businessPartnerId
-              }
-            }
-
-            await persistance.updateOrder(req, mockResponseApi());
-            persistance.logCreateOrUpdateOrder(req, mockResponseApi());
         }
         break;
       }
