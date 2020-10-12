@@ -23,7 +23,7 @@ const _genMessage = (type:EnumNotificationType, orderId:string, status:EnumOrder
   }
 }
 
-export const userNotifier = async(partnerId:string, orderId:string, status:EnumOrderStatus, contactType:T_ORDER_CONTACT_TYPE, contactInfo:string) => {
+export const userNotifier = async(partnerId:string, orderId:string, status:EnumOrderStatus, contactType:EnumNotificationType, contactInfo:string) => {
   switch(contactType) {
     case EnumNotificationType.PUSH_NOTIFICATION:
       const pusherMessage = {

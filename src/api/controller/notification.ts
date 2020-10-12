@@ -3,6 +3,7 @@ import {createPusher, pushPusherMessage} from "../../module/pusher";
 import {mockResponseApi} from "./_genericapi";
 import {PUSHER} from "../../module/const";
 import {userNotifier} from "../../module/notification";
+import {EnumOrderStatus, EnumNotificationType} from "../../definition/enum";
 import {T_ORDER_CONTACT_TYPE} from "../../definition/type";
 
 const notification = (function() {
@@ -17,12 +18,12 @@ const notification = (function() {
   return {
     notifyOrderEvent: function(req, res) {
       switch(req.body.status) {
-        case "Order Placed":
+        case EnumOrderStatus.ORDER_PLACED:
           pushPusherMessage(pusher, PUSHER.orderEvent, JSON.stringify(req.body));
           break;
         default:
           const {order_id, status, contact_type, contact_info} = req.body;
-          const _contactType = contact_type as T_ORDER_CONTACT_TYPE;
+          const _contactType = contact_type as EnumNotificationType;
           userNotifier(req.params.partnerid, order_id, status, _contactType, contact_info);
           break;
       }

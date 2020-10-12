@@ -46,7 +46,7 @@ async function startKafkaOrderMonitor(){
             const req = {
               body: {
                 order_id: messageInJson.orderId,
-                state: "Order Placed",
+                state: EnumOrderStatus.ORDER_PLACED,
                 trigger_datetime: messageInJson.triggerTime
               },
               params: {
