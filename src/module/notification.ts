@@ -1,21 +1,45 @@
 import {sendEmail} from './gmail';
 import firebase from './firebase';
-import {EnumOrderStatus} from '../definition/enum';
+import {EnumOrderStatus, EnumNotificationType} from '../definition/enum';
 import {T_ORDER_CONTACT_TYPE} from '../definition/type';
+
+const _emphasis = (type:EnumNotificationType, msg:string) => {
+  switch(type) {
+    case EnumNotificationType.EMAIL:
+      return `<em>${msg}</em>`;
+    default:
+      return msg;
+  }
+}
+
+const _genMessage = (type:EnumNotificationType, orderId:string, status:EnumOrderStatus) => {
+  switch(status) {
+    case EnumOrderStatus.READY:
+      return `Your ${_emphasis(type, orderId)} is ready for pick up, please go to the respective counter to pick it up.`
+    case EnumOrderStatus.TAKEN:
+      return `Your ${_emphasis(type, orderId)} is taken.`
+    case EnumOrderStatus.UNREADY:
+      return `Apologies, your ${_emphasis(type, orderId)} that was supposed to be picked up is currently cancelled.`
+  }
+}
 
 export const userNotifier = async(partnerId:string, orderId:string, status:EnumOrderStatus, contactType:T_ORDER_CONTACT_TYPE, contactInfo:string) => {
   switch(contactType) {
-    case 'Push Notification':
+    case EnumNotificationType.PUSH_NOTIFICATION:
       const pusherMessage = {
         "orderId": orderId,
         "status": status,
         "partnerId": partnerId
       }
-      firebase.sendCloudMessageByRegistrationToken(pusherMessage, contactInfo, `Order ${orderId} is ${status}`, `Your ${orderId} is ${status} for pick up, please go to the respective counter to pick it up.`);
+      firebase.sendCloudMessageByRegistrationToken(
+        pusherMessage, contactInfo,
+        `Order ${orderId} is ${status}`,
+        _genMessage(EnumNotificationType.PUSH_NOTIFICATION, orderId, status)
+      );
       break;
-    case 'Email':
+    case EnumNotificationType.EMAIL:
       const subject = `Order ${orderId} is ${status}`;
-      const emailMessage = `Your <em>${orderId}</em> is <em>${status}</em> for pick up, please go to the respective counter to pick it up.`;
+      const emailMessage = _genMessage(EnumNotificationType.EMAIL, orderId, status);
       const recipientTo = contactInfo;
       sendEmail(process.env.GMAIL_USER_EMAIL , process.env.GMAIL_PASSWORD, recipientTo, subject, emailMessage);
       break;

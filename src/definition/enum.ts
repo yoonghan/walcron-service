@@ -12,3 +12,8 @@ export enum EnumLockStatus {
   UNLOCK = "unlock",
   UNLOCKED = "unlocked"
 }
+
+export enum EnumNotificationType {
+  EMAIL = "Email",
+  PUSH_NOTIFICATION = "Push Notification"
+}

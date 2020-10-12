@@ -20,7 +20,7 @@ const notification = (function() {
         case "Order Placed":
           pushPusherMessage(pusher, PUSHER.orderEvent, JSON.stringify(req.body));
           break;
-        case "Ready":
+        default:
           const {order_id, status, contact_type, contact_info} = req.body;
           const _contactType = contact_type as T_ORDER_CONTACT_TYPE;
           userNotifier(req.params.partnerid, order_id, status, _contactType, contact_info);
