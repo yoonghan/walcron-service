@@ -70,7 +70,7 @@ const locker = {
               origin: origin,
               order_id: orderId,
               locker_ids: lockResponseInJson.info.locker_ids,
-              state: EnumLockStatus.UNLOCK
+              state: EnumLockStatus.UNLOCK_COMPLETE
             },
             params: {
               partnerid: partnerId,

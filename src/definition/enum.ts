@@ -10,7 +10,9 @@ export enum EnumLockStatus {
   LOCK = "lock",
   LOCKED = "locked",
   UNLOCK = "unlock",
-  UNLOCKED = "unlocked"
+  UNLOCKED = "unlocked",
+  UNLOCK_COMPLETE = "unlock complete",
+  UNLOCKED_COMPLET = "unlocked complete"
 }
 
 export enum EnumNotificationType {
