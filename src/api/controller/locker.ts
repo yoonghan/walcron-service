@@ -107,6 +107,8 @@ const locker = {
       }
     }
 
+    publishsubscribe.writeLock(lockReq, mockResponseApi());
+
     const orderReq = {
       body: {
         origin: req.body.origin,
@@ -118,12 +120,15 @@ const locker = {
       }
     }
 
-    publishsubscribe.writeLock(lockReq, mockResponseApi());
-    if(req.body.state === EnumLockStatus.LOCK) {
-      order.readyOrder(orderReq, mockResponseApi());
-    }
-    else {
-      order.unreadyOrder(orderReq, mockResponseApi());
+    switch(req.body.state) {
+      case EnumLockStatus.LOCKED:
+        order.readyOrder(orderReq, mockResponseApi());
+        break;
+      case EnumLockStatus.UNLOCKED:
+        order.unreadyOrder(orderReq, mockResponseApi());
+        break;
+      default:
+        console.log('Change status', req.body.state);
     }
 
     res.json({'status': 'initiated lock'});
