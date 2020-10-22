@@ -19,9 +19,11 @@ const notification = (function() {
     notifyOrderEvent: function(req, res) {
       switch(req.body.status) {
         case EnumOrderStatus.ORDER_PLACED:
-        case EnumOrderStatus.TAKEN:
           pushPusherMessage(pusher, PUSHER.orderEvent, JSON.stringify(req.body));
           break;
+        case EnumOrderStatus.TAKEN:
+          pushPusherMessage(pusher, PUSHER.orderEvent, JSON.stringify(req.body));
+          //fall through.
         default:
           const {order_id, status, contact_type, contact_info} = req.body;
           const _contactType = contact_type as EnumNotificationType;
