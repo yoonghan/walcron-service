@@ -51,7 +51,7 @@ export async function runKafkaConsumer(kafkaClient:any, prefix:string, groupId:s
   const _consumeMessage = () => {
     consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
-        writer(message.value.toString());
+        await writer(message.value.toString());
       },
     })
   }
