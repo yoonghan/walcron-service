@@ -75,9 +75,6 @@ const chewySmarthome = {
     const HTTP_STATUS_OK = 200;
     const HTTP_STATUS_ERROR = 400;
 
-    console.log("request.query", request.query);
-    console.log("request.body", request.body);
-
     let obj;
     if (grantType === 'authorization_code') {
       if(request.body.client_secret === SMARTHOME_SECRET_ID) {
