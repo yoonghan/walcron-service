@@ -6,6 +6,7 @@ import root from './controller/root';
 import locker from './controller/locker';
 import order from './controller/order';
 import smarthome from './controller/smarthome';
+import smarthomeGoogle from './controller/smarthome_google';
 
 var webCorsOptions = {
   origin: process.env.ALLOWED_CROSS_ORIGIN_WEB,
@@ -48,6 +49,9 @@ module.exports = function(app) {
       },
       '/smarthome/monitor': {
         get: smarthome.monitor
+      },
+      '/smarthome/': {
+        post: smarthomeGoogle
       },
       '/monitor': {
         get: general.monitor,

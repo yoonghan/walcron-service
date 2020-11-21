@@ -16,7 +16,9 @@
     "kafkajs": "^1.14.0",
     "nodemailer": "^6.4.13",
     "pusher": "^3.0.1",
-    "typescript": "^4.0.3"
+    "typescript": "^4.0.3",
+    "actions-on-google": "^2.12.0",
+    "googleapis": "^43.0.0"
   },
   "engines": {
     "node": "12.x"
