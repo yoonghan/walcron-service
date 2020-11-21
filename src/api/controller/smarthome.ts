@@ -6,7 +6,7 @@ import {smarthome} from "actions-on-google";
 import {google} from "googleapis";
 
 const {SMARTHOME_ACCESS_TOKEN, SMARTHOME_REFRESH_TOKEN, SMARTHOME_AUTH_TOKEN} = process.env;
-const {SMARTHOME_USER_ID, SMARTHOME_CLIENT_ID} = process.env;
+const {SMARTHOME_USER_ID, SMARTHOME_CLIENT_ID, SMARTHOME_SECRET_ID} = process.env;
 
 const chewySmarthome = {
   monitor: async function(req, res) {
@@ -73,18 +73,21 @@ const chewySmarthome = {
       request.query.grant_type : request.body.grant_type;
     const secondsInDay = 86400; // 60 * 60 * 24
     const HTTP_STATUS_OK = 200;
+    const HTTP_STATUS_ERROR = 400;
 
     console.log("request.query", request.query);
     console.log("request.body", request.body);
 
     let obj;
     if (grantType === 'authorization_code') {
-      obj = {
-        token_type: 'bearer',
-        access_token: SMARTHOME_ACCESS_TOKEN,
-        refresh_token: SMARTHOME_REFRESH_TOKEN,
-        expires_in: secondsInDay,
-      };
+      if(request.body.client_secret === SMARTHOME_SECRET_ID) {
+        obj = {
+          token_type: 'bearer',
+          access_token: SMARTHOME_ACCESS_TOKEN,
+          refresh_token: SMARTHOME_REFRESH_TOKEN,
+          expires_in: secondsInDay,
+        };
+      }
     } else if (grantType === 'refresh_token') {
       obj = {
         token_type: 'bearer',
@@ -92,8 +95,15 @@ const chewySmarthome = {
         expires_in: secondsInDay,
       };
     }
-    response.status(HTTP_STATUS_OK)
-        .json(obj);
+
+    if(obj.token_type === 'bearer') {
+      response.status(HTTP_STATUS_OK)
+          .json(obj);
+    }
+    else {
+      response.status(HTTP_STATUS_ERROR)
+          .json({});
+    }
   },
   createApp: function() {
     const updateDevice = async (execution, deviceId) => {
