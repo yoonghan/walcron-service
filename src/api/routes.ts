@@ -53,6 +53,18 @@ module.exports = function(app) {
       '/smarthome/': {
         post: smarthomeGoogle
       },
+      '/smarthome/login': {
+        post: smarthome.login,
+        get: smarthome.login
+      },
+      '/smarthome/auth': {
+        post: smarthome.auth,
+        get: smarthome.auth
+      },
+      '/smarthome/token': {
+        post: smarthome.token,
+        get: smarthome.token
+      },
       '/monitor': {
         get: general.monitor,
         options: general.preflight

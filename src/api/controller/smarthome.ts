@@ -54,7 +54,7 @@ const smarthome = {
   auth: function(request, response) {
     const responseurl = `${decodeURIComponent(request.query.redirect_uri)}?code=${SMARTHOME_AUTH_TOKEN}&state=${request.query.state}`;
     return response.redirect(
-        `/login?responseurl=${encodeURIComponent(responseurl)}`);
+        `//smarthome/login?responseurl=${encodeURIComponent(responseurl)}`);
   },
   token: function(request, response) {
     const grantType = request.query.grant_type ?
