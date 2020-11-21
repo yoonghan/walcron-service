@@ -50,7 +50,8 @@ module.exports = function(app) {
       '/smarthome/monitor': {
         get: smarthome.monitor
       },
-      '/smarthome/': {
+      '/smarthome': {
+        get: smarthomeGoogle,
         post: smarthomeGoogle
       },
       '/smarthome/login': {
