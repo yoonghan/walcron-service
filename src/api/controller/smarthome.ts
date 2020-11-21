@@ -33,7 +33,7 @@ const smarthome = {
       <html>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <body>
-          <form action="/login" method="post">
+          <form action="/api/smarthome/login" method="post">
             <input type="hidden"
               name="responseurl" value="${request.query.responseurl}" />
             <button type="submit" style="font-size:14pt">
