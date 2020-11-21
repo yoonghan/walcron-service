@@ -210,7 +210,7 @@ const chewySmarthome = {
         payload: {
           commands: [result],
         },
-      };
+      } as any;
     });
 
     app.onDisconnect((body, headers) => {
