@@ -3,8 +3,8 @@ import {EnumOrderStatus, EnumLockStatus} from '../../definition/enum';
 
 const persistence = (function () {
   function initialize() {
-    const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE} = process.env;
-    return connectAirtable(AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE);
+    const {AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE, AIRTABLE_BASE_KEY_SMARTHOME} = process.env;
+    return connectAirtable(AIRTABLE_API_KEY_TWICE, AIRTABLE_BASE_KEY_TWICE, AIRTABLE_BASE_KEY_SMARTHOME);
   }
 
   const airtable = initialize();
@@ -172,6 +172,18 @@ const persistence = (function () {
             locker_ids: lockerInformation.lockerIds
           }
         });
+      }
+      catch (err) {
+        res.json({'status': 'fail'});
+      }
+    },
+    createSmarthomeLog: async function(req, res) {
+      try {
+        await airtable.createSmarthomeLog(
+          req.params.id,
+          req.body.action
+        );
+        res.json({'status': 'ok'});
       }
       catch (err) {
         res.json({'status': 'fail'});

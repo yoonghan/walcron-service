@@ -11,8 +11,9 @@ export enum EnumAirtables {
   REPRESENTATIVE = "Representative"
 };
 
-export function connectAirtable (apiKey:string, baseKey:string) {
-  const base = new Airtable({apiKey: apiKey}).base(baseKey);
+export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBaseKey:string) {
+  const twiceBase = new Airtable({apiKey: apiKey}).base(twiceBaseKey);
+  const smarthomeBase = new Airtable({apiKey: apiKey}).base(smarthomeBaseKey);
 
   const _buildLock = (
     businessPartnerId: string,
@@ -84,7 +85,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   const _getAllCurrentLockStatus = async (partnerId:string) => {
     return new Promise((resolve, reject) => {
-      base(EnumAirtables.LOCK).select({
+      twiceBase(EnumAirtables.LOCK).select({
           maxRecords: 20,
           pageSize: 20,
           view: "Grid view",
@@ -110,7 +111,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   const _getAllAvailableOrders = async (partnerId:string) => {
     return new Promise((resolve, reject) => {
-      base(EnumAirtables.ORDER).select({
+      twiceBase(EnumAirtables.ORDER).select({
           maxRecords: 50,
           pageSize: 50,
           view: "Grid view",
@@ -129,7 +130,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   const _updateOrder = async (partnerId:string, orderId: string, status:EnumOrderStatus) => (
     new Promise((resolve, reject) => {
-      base(EnumAirtables.ORDER).select({
+      twiceBase(EnumAirtables.ORDER).select({
           pageSize: 1,
           view: "Grid view",
           filterByFormula: `AND({Order Id}='${orderId}', {Business Partner Id} = '${partnerId}')`
@@ -139,7 +140,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
           reject('retrieve error');
         }
         else {
-          base(EnumAirtables.ORDER).update([
+          twiceBase(EnumAirtables.ORDER).update([
             {
               "id": records[0].id,
               "fields": {
@@ -165,7 +166,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   const _updateLock = async (lockerId: string, partnerId:string, orderId:string, status:EnumLockStatus) => (
     new Promise((resolve, reject) => {
-      base(EnumAirtables.LOCK).select({
+      twiceBase(EnumAirtables.LOCK).select({
           pageSize: 1,
           view: "Grid view",
           filterByFormula: `AND({Locker Id}='${lockerId}', {Business Partner Id} = '${partnerId}')`
@@ -175,7 +176,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
           reject('retrieve error');
         }
         else {
-          base(EnumAirtables.LOCK).update([
+          twiceBase(EnumAirtables.LOCK).update([
             {
               "id": records[0].id,
               "fields": {
@@ -197,7 +198,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   const _findRepresentativeOrders = async (representativeId:string) => (
     new Promise((resolve, reject) => {
-      base(EnumAirtables.ORDER).select({
+      twiceBase(EnumAirtables.ORDER).select({
         pageSize: 20,
         view: "Grid view",
         filterByFormula: `AND({Contact Type}='Representative', {Contact Info}=${representativeId})`
@@ -221,7 +222,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   const _findRepresentativeInfo = (representativeId:string) => (
     new Promise((resolve, reject) => {
-      base(EnumAirtables.REPRESENTATIVE).select({
+      twiceBase(EnumAirtables.REPRESENTATIVE).select({
           pageSize: 1,
           view: "Grid view",
           filterByFormula: `{Representative Id}='${representativeId}'`
@@ -245,7 +246,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   const _updateRepresentativeToken = async (representativeId:string, token:string) => (
     new Promise((resolve, reject) => {
-      base(EnumAirtables.REPRESENTATIVE).select({
+      twiceBase(EnumAirtables.REPRESENTATIVE).select({
           pageSize: 1,
           view: "Grid view",
           filterByFormula: `{Representative Id}='${representativeId}'`
@@ -255,7 +256,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
           reject("record not found");
         }
         else {
-          base(EnumAirtables.REPRESENTATIVE).update([
+          twiceBase(EnumAirtables.REPRESENTATIVE).update([
             {
               "id": records[0].id,
               "fields": {
@@ -276,7 +277,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   const _findOrderInformation = async (partnerId: string, orderId: string) => (
     new Promise((resolve, reject) => {
-      base(EnumAirtables.ORDER).select({
+      twiceBase(EnumAirtables.ORDER).select({
           pageSize: 1,
           view: "Grid view",
           filterByFormula: `AND({Order Id}='${orderId}', {Business Partner Id} = '${partnerId}')`
@@ -298,7 +299,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   const _getContactInformation = async (partnerId: string, orderId: string) => {
     const orderQuery = new Promise((resolve, reject) => {
-      base(EnumAirtables.ORDER).select({
+      twiceBase(EnumAirtables.ORDER).select({
           pageSize: 1,
           view: "Grid view",
           filterByFormula: `AND({Order Id}='${orderId}', {Business Partner Id} = '${partnerId}')`
@@ -352,7 +353,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   const _getLockerInformation = async (partnerId:string, orderId:string, origin:string) => (
     new Promise((resolve, reject) => {
-      base(EnumAirtables.LOCK).select({
+      twiceBase(EnumAirtables.LOCK).select({
           pageSize: 10,
           view: "Grid view",
           filterByFormula: `AND({Order Id}='${orderId}', {Business Partner Id} = '${partnerId}')`
@@ -382,7 +383,21 @@ export function connectAirtable (apiKey:string, baseKey:string) {
   }
 
   const _create = (table: string, values: Array<Object>, callback = defaultCallback) => {
-    base(table).create(
+    twiceBase(table).create(
+      values,
+      callback
+    );
+  }
+
+  const _createSmarthomeLog = (id: string, action:string, callback = defaultCallback) => {
+    const values = [{
+        "fields":{
+          "Id": id,
+          "Action": action
+        }
+      }];
+
+    smarthomeBase("Action Log").create(
       values,
       callback
     );
@@ -390,6 +405,7 @@ export function connectAirtable (apiKey:string, baseKey:string) {
 
   return {
     create: _create,
+    createSmarthomeLog: _createSmarthomeLog,
     buildLockLog: _buildLockLog,
     buildOrder: _buildOrder,
     buildOrderLog: _buildOrderLog,

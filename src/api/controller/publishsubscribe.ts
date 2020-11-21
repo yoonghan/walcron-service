@@ -20,10 +20,17 @@ export interface ILockMessage {
   triggerTime: string;
 }
 
+export interface ISmarthomeMessage {
+  action: string;
+  triggerTime: string;
+}
+
 const publishsubscribe = (function () {
 
   const {KAFKA_LOCK_BROKERS, KAFKA_LOCK_USERNAME, KAFKA_LOCK_PASSWORD, KAFKA_LOCK_TOPIC_PREFIX} = process.env;
   const {KAFKA_ORDER_BROKERS, KAFKA_ORDER_USERNAME, KAFKA_ORDER_PASSWORD, KAFKA_ORDER_TOPIC_PREFIX} = process.env;
+  const {KAFKA_SMARTHOME_BROKERS, KAFKA_SMARTHOME_USERNAME, KAFKA_SMARTHOME_PASSWORD, KAFKA_SMARTHOME_TOPIC_PREFIX, KAFKA_SMARTHOME_GROUP_ID} = process.env;
+
 
   async function initializeLock() {
     const kafkaLockConf = createKafkaConf(KAFKA_LOCK_BROKERS.split(','), KAFKA_LOCK_USERNAME, KAFKA_LOCK_PASSWORD);
@@ -35,10 +42,17 @@ const publishsubscribe = (function () {
     kafkaOrderWriter = await runKafkaProducer(kafkaOrderConf, KAFKA_ORDER_TOPIC_PREFIX);
   }
 
+  async function initializeSmarthome() {
+    const kafkaSmarthomeConf = createKafkaConf(KAFKA_SMARTHOME_BROKERS.split(','), KAFKA_SMARTHOME_USERNAME, KAFKA_SMARTHOME_PASSWORD);
+    kafkaSmarthomeWriter = await runKafkaProducer(kafkaSmarthomeConf, KAFKA_SMARTHOME_TOPIC_PREFIX);
+  }
+
   let kafkaLockWriter;
   let kafkaOrderWriter;
+  let kafkaSmarthomeWriter;
   initializeLock();
   initializeOrder();
+  initializeSmarthome();
 
   const _generateLockKey = (lockerId:string, orderId:string, partnerId:string) => (`${lockerId}-${orderId}-${partnerId}`)
   const _generateOrderKey = (orderId:string, partnerId:string) => (`${orderId}-${partnerId}`)
@@ -83,6 +97,20 @@ const publishsubscribe = (function () {
           triggerTime: new Date().toISOString()
         }
         kafkaOrderWriter(_generateOrderKey(req.body.order_id, req.params.partnerid), JSON.stringify(message));
+        res.json({'status': 'ok'});
+      }
+    },
+    writeSmarthome: async function(req, res) {
+      if(typeof kafkaSmarthomeWriter === 'undefined'){
+        console.error('No persistence smart home writer');
+        res.json({'status': 'fail'});
+      }
+      else {
+        const message:ISmarthomeMessage = {
+          action: req.body.action,
+          triggerTime: new Date().toISOString()
+        }
+        kafkaSmarthomeWriter(req.params.id, JSON.stringify(message));
         res.json({'status': 'ok'});
       }
     }
