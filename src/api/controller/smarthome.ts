@@ -180,7 +180,7 @@ const chewySmarthome = {
       for (const device of intent.payload.devices) {
         const deviceId = device.id;
         payload.devices[deviceId] = {
-          on: false,
+          on: true,
           isPaused: false,
           isRunning: false,
           currentRunCycle: [{
