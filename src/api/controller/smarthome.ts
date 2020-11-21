@@ -6,7 +6,7 @@ import {smarthome} from "actions-on-google";
 import {google} from "googleapis";
 
 const {SMARTHOME_ACCESS_TOKEN, SMARTHOME_REFRESH_TOKEN, SMARTHOME_AUTH_TOKEN} = process.env;
-const {SMARTHOME_USER_ID} = process.env;
+const {SMARTHOME_USER_ID, SMARTHOME_CLIENT_ID} = process.env;
 
 const chewySmarthome = {
   monitor: async function(req, res) {
@@ -52,16 +52,30 @@ const chewySmarthome = {
     }
   },
   auth: function(request, response) {
-    console.log(request.query, "request.query");
     const responseurl = `${decodeURIComponent(request.query.redirect_uri)}?code=${SMARTHOME_AUTH_TOKEN}&state=${request.query.state}`;
-    return response.redirect(
-        `/api/smarthome/login?responseurl=${encodeURIComponent(responseurl)}`);
+    if(request.query.client_id === SMARTHOME_CLIENT_ID) {
+      return response.redirect(
+          `/api/smarthome/login?responseurl=${encodeURIComponent(responseurl)}`);
+    }
+    else {
+      response.send(`
+        <html>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <body>
+            <h2>Invalid</h2>
+          </body>
+        </html>
+      `);
+    }
   },
   token: function(request, response) {
     const grantType = request.query.grant_type ?
       request.query.grant_type : request.body.grant_type;
     const secondsInDay = 86400; // 60 * 60 * 24
     const HTTP_STATUS_OK = 200;
+
+    console.log("request.query", request.query);
+    console.log("request.body", request.body);
 
     let obj;
     if (grantType === 'authorization_code') {
