@@ -106,29 +106,43 @@ const chewySmarthome = {
     const updateDevice = async (execution, deviceId) => {
       const {params, command} = execution;
 
-      const smarthomeReq = {
-        body: {
-          action: JSON.stringify(params)
-        },
-        params: {
-          id: command
-        }
-      }
-
-      persistance.createSmarthomeLog(smarthomeReq, mockResponseApi());
-
       let state; let ref;
       switch (command) {
         case 'action.devices.commands.OnOff':
+          params.on = !params.on
           state = {on: params.on};
           break;
         case 'action.devices.commands.StartStop':
-          state = {isRunning: params.start};
+          params.isRunning = !params.isRunning
+          state = {isRunning: !params.isRunning};
           break;
         case 'action.devices.commands.PauseUnpause':
-          state = {isPaused: params.pause};
+          params.pause = !params.pause
+          state = {isPaused: !params.pause};
           break;
       }
+
+
+      const smarthomeLogReq = {
+        body: {
+          action: JSON.stringify(state)
+        },
+        params: {
+          id: deviceId
+        }
+      }
+      const smarthomeReq = {
+        body: {
+          action: JSON.stringify(execution)
+        },
+        params: {
+          id: deviceId
+        }
+      }
+
+      persistance.createSmarthomeLog(smarthomeLogReq, mockResponseApi());
+      persistance.updateSmarthome(smarthomeReq, mockResponseApi());
+      publishsubscribe.writeSmarthome(smarthomeReq, mockResponseApi());
 
       return state;
     };
@@ -179,18 +193,33 @@ const chewySmarthome = {
       const intent = body.inputs[0];
       for (const device of intent.payload.devices) {
         const deviceId = device.id;
-        payload.devices[deviceId] = {
-          on: true,
-          isPaused: false,
-          isRunning: false,
-          currentRunCycle: [{
-            currentCycle: 'rinse',
-            nextCycle: 'spin',
-            lang: 'en',
-          }],
-          currentTotalRemainingTime: 1212,
-          currentCycleRemainingTime: 301,
-        };
+
+        const smarthomeReq = {
+          params: {
+            id: deviceId
+          }
+        }
+
+        const actionResponse = mockResponseApi();
+        persistance.findSmarthome(smarthomeReq, actionResponse);
+        const deviceResponseInJson = actionResponse.getJson();
+        if(deviceResponseInJson.action) {
+          payload.devices[deviceId] = JSON.parse(deviceResponseInJson.action);
+        }
+        else {
+          payload.devices[deviceId] = {
+            on: true,
+            isPaused: false,
+            isRunning: false,
+            currentRunCycle: [{
+              currentCycle: 'rinse',
+              nextCycle: 'spin',
+              lang: 'en',
+            }],
+            currentTotalRemainingTime: 1212,
+            currentCycleRemainingTime: 301,
+          };
+        }
       }
       return {
         requestId: requestId,

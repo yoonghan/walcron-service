@@ -188,6 +188,29 @@ const persistence = (function () {
       catch (err) {
         res.json({'status': 'fail'});
       }
+    },
+    updateSmarthome: async function(req, res) {
+      try {
+        airtable.updateSmarthome(req.params.id, req.body.action)
+        .then(() => {
+          res.json({'status': 'ok'});
+        })
+        .catch((err) => {
+          res.json({'status': 'error'});
+        })
+      }
+      catch (err) {
+        res.json({'status': 'fail'});
+      }
+    },
+    findSmarthome: async function(req, res) {
+      try {
+        const response = await airtable.findSmarthomeStatus(req.params.id);
+        res.json({'status': 'ok', 'action':response});
+      }
+      catch (err) {
+        res.json({'status': 'fail'});
+      }
     }
   }
 })();

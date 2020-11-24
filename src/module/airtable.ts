@@ -8,7 +8,9 @@ export enum EnumAirtables {
   ORDER_LOG = "Order Log",
   LOCK = "Lock",
   LOCK_LOG = "Lock Log",
-  REPRESENTATIVE = "Representative"
+  REPRESENTATIVE = "Representative",
+  SMARTHOME_ACTION_LOG = "Action Log",
+  SMARTHOME_STATUS = "Status"
 };
 
 export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBaseKey:string) {
@@ -389,18 +391,70 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
     );
   }
 
-  const _createSmarthomeLog = (id: string, action:string, callback = defaultCallback) => {
+  const _createSmarthomeLog = (deviceId: string, action:string, callback = defaultCallback) => {
     const values = [{
         "fields":{
-          "Id": id,
+          "Device Id": deviceId,
           "Action": action
         }
       }];
 
-    smarthomeBase("Action Log").create(
+    smarthomeBase(EnumAirtables.SMARTHOME_ACTION_LOG).create(
       values,
       callback
     );
+  }
+
+  const _updateSmarthome = async (deviceId: string, action:string, callback = defaultCallback) => {
+    new Promise((resolve, reject) => {
+      smarthomeBase(EnumAirtables.SMARTHOME_STATUS).select({
+          pageSize: 1,
+          view: "Grid view",
+          filterByFormula: `{Device Id}='${deviceId}'`
+      }).firstPage(function(err, records) {
+        if(err || records.length !== 1) {
+          console.error(err, "retrieve update error");
+          reject("record not found");
+        }
+        else {
+          smarthomeBase(EnumAirtables.SMARTHOME_STATUS).update([
+            {
+              "Device Id": deviceId,
+              "fields": {
+                "Action": action
+              }
+            }
+          ], function(err, records) {
+            if (err) {
+              console.error(err, "update error");
+              reject(`update error: ${err}`);
+            }
+            resolve("ok");
+          });
+        }
+      });
+    })
+  }
+
+  const _findSmarthomeStatus = async (deviceId: string, callback = defaultCallback) => {
+    new Promise((resolve, reject) => {
+      twiceBase(EnumAirtables.SMARTHOME_STATUS).select({
+          pageSize: 1,
+          view: "Grid view",
+          filterByFormula: `{Device Id}='${deviceId}'`
+      }).firstPage(function(err, records) {
+        if(err || records.length !== 1) {
+          console.error(err, 'retrieve update error');
+          reject('retrieve error');
+        }
+        else {
+          const response = {
+            action: records[0].get('Status')
+          };
+          resolve(response);
+        }
+      });
+    })
   }
 
   return {
@@ -413,10 +467,12 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
     getCurrentLockStatuses: _getAllCurrentLockStatus,
     updateOrder: _updateOrder,
     updateLock: _updateLock,
+    updateSmarthome: _updateSmarthome,
     findRepresentativeInfo: _findRepresentativeInfo,
     findOrderInformation: _findOrderInformation,
     findContactInformation: _getContactInformation,
     findRepresentativeOrders: _findRepresentativeOrders,
+    findSmarthomeStatus: _findSmarthomeStatus,
     updateRepresentativeToken: _updateRepresentativeToken,
     getLockerInformation: _getLockerInformation
   };
