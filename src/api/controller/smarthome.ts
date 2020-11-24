@@ -218,6 +218,7 @@ const chewySmarthome = {
         await persistance.findSmarthome(smarthomeReq, actionResponse);
         const deviceResponseInJson = actionResponse.getJson();
         if(deviceResponseInJson && deviceResponseInJson.action) {
+          console.log(deviceResponseInJson.action, 'action')
           payload.devices[deviceId] = JSON.parse(deviceResponseInJson.action);
         }
         else {
