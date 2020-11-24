@@ -189,6 +189,18 @@ const persistence = (function () {
         res.json({'status': 'fail'});
       }
     },
+    createSmarthome: async function(req, res) {
+      try {
+        await airtable.createSmarthome(
+          req.params.id,
+          req.body.action
+        );
+        res.json({'status': 'ok'});
+      }
+      catch (err) {
+        res.json({'status': 'fail'});
+      }
+    },
     updateSmarthome: async function(req, res) {
       try {
         airtable.updateSmarthome(req.params.id, req.body.action)

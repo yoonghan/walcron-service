@@ -207,7 +207,7 @@ const chewySmarthome = {
           payload.devices[deviceId] = JSON.parse(deviceResponseInJson.action);
         }
         else {
-          payload.devices[deviceId] = {
+          const defaultStatus = {
             on: true,
             isPaused: false,
             isRunning: false,
@@ -219,6 +219,19 @@ const chewySmarthome = {
             currentTotalRemainingTime: 1212,
             currentCycleRemainingTime: 301,
           };
+
+          payload.devices[deviceId] = defaultStatus
+
+          const smarthomeReq = {
+            body: {
+              action: JSON.stringify(defaultStatus)
+            },
+            params: {
+              id: deviceId
+            }
+          }
+          persistance.createSmarthomeLog(smarthomeReq, mockResponseApi());
+          persistance.createSmarthome(smarthomeReq, mockResponseApi());
         }
       }
       return {

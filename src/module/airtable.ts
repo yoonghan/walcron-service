@@ -405,6 +405,20 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
     );
   }
 
+  const _createSmarthome = (deviceId: string, action:string, callback = defaultCallback) => {
+    const values = [{
+        "fields":{
+          "Device Id": deviceId,
+          "Action": action
+        }
+      }];
+
+    smarthomeBase(EnumAirtables.SMARTHOME_STATUS).create(
+      values,
+      callback
+    );
+  }
+
   const _updateSmarthome = async (deviceId: string, action:string, callback = defaultCallback) => {
     new Promise((resolve, reject) => {
       smarthomeBase(EnumAirtables.SMARTHOME_STATUS).select({
@@ -460,6 +474,7 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
   return {
     create: _create,
     createSmarthomeLog: _createSmarthomeLog,
+    createSmarthome: _createSmarthome,
     buildLockLog: _buildLockLog,
     buildOrder: _buildOrder,
     buildOrderLog: _buildOrderLog,
