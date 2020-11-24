@@ -457,8 +457,9 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
           view: "Grid view",
           filterByFormula: `{Device Id}='${deviceId}'`
       }).firstPage(function(err, records) {
+        console.log(deviceId, "deviceId");
         if(err || records.length !== 1) {
-          console.error(err, 'retrieve update error');
+          console.error(err, 'retrieve get error');
           reject('retrieve error');
         }
         else {

@@ -217,7 +217,9 @@ const persistence = (function () {
     },
     findSmarthome: async function(req, res) {
       try {
+        console.log("Finding 1");
         const response = await airtable.findSmarthomeStatus(req.params.id);
+        console.log("Finding");
         res.json({'status': 'ok', 'action':response});
       }
       catch (err) {
