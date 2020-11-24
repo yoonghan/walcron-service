@@ -466,6 +466,7 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
           const response = {
             action: records[0].get('Action')
           };
+          console.log(action, 'action');
           resolve(response);
         }
       });
