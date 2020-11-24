@@ -419,7 +419,7 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
     );
   }
 
-  const _updateSmarthome = async (deviceId: string, action:string, callback = defaultCallback) => {
+  const _updateSmarthome = async (deviceId: string, action:string, callback = defaultCallback) => (
     new Promise((resolve, reject) => {
       smarthomeBase(EnumAirtables.SMARTHOME_STATUS).select({
           pageSize: 1,
@@ -433,7 +433,7 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
         else {
           smarthomeBase(EnumAirtables.SMARTHOME_STATUS).update([
             {
-              "Device Id": deviceId,
+              "id": records[0].id,
               "fields": {
                 "Action": action
               }
@@ -448,16 +448,15 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
         }
       });
     })
-  }
+  )
 
-  const _findSmarthomeStatus = async (deviceId: string, callback = defaultCallback) => {
+  const _findSmarthomeStatus = async (deviceId: string, callback = defaultCallback) => (
     new Promise((resolve, reject) => {
       smarthomeBase(EnumAirtables.SMARTHOME_STATUS).select({
           pageSize: 1,
           view: "Grid view",
-          filterByFormula: `{Device Id}='${deviceId}'`
+          filterByFormula: `({Device Id}='${deviceId}')`
       }).firstPage(function(err, records) {
-        console.log(deviceId, "deviceId");
         if(err || records.length !== 1) {
           console.error(err, 'retrieve get error');
           reject('retrieve error');
@@ -466,12 +465,11 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
           const response = {
             action: records[0].get('Action')
           };
-          console.log(action, 'action');
           resolve(response);
         }
       });
     })
-  }
+  )
 
   return {
     create: _create,

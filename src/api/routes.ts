@@ -44,7 +44,8 @@ module.exports = function(app) {
     },
     '/api': {
       '/smarthome/action/:id': {
-        post: smarthome.trigger
+        post: smarthome.trigger,
+        get: smarthome.retrieve
       },
       '/smarthome/monitor': {
         get: smarthome.monitor

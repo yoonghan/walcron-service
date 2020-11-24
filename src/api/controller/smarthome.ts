@@ -12,6 +12,20 @@ const chewySmarthome = {
   monitor: async function(req, res) {
     res.json({'status': 'initiated reader'});
   },
+  retrieve: async function(req, res) {
+    const smarthomeReq = {
+      params: {
+        id: req.params.id
+      },
+      body: {
+        action: "{sdfdf}"
+      }
+    }
+    const actionResponse = mockResponseApi();
+    await persistance.updateSmarthome(smarthomeReq, actionResponse);
+    const deviceResponseInJson = actionResponse.getJson();
+    res.json({'response': deviceResponseInJson});
+  },
   trigger: async function(req, res) {
     const action = req.body.action;
     const id = req.params.id;
@@ -203,7 +217,6 @@ const chewySmarthome = {
         const actionResponse = mockResponseApi();
         await persistance.findSmarthome(smarthomeReq, actionResponse);
         const deviceResponseInJson = actionResponse.getJson();
-        console.log(deviceResponseInJson, "deviceResponseInJson");
         if(deviceResponseInJson && deviceResponseInJson.action) {
           payload.devices[deviceId] = JSON.parse(deviceResponseInJson.action);
         }
