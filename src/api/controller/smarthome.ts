@@ -203,6 +203,7 @@ const chewySmarthome = {
         const actionResponse = mockResponseApi();
         persistance.findSmarthome(smarthomeReq, actionResponse);
         const deviceResponseInJson = actionResponse.getJson();
+        console.log(deviceResponseInJson, "deviceResponseInJson");
         if(deviceResponseInJson && deviceResponseInJson.action) {
           payload.devices[deviceId] = JSON.parse(deviceResponseInJson.action);
         }
