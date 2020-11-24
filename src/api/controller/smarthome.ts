@@ -148,7 +148,7 @@ const chewySmarthome = {
     };
 
     const app = smarthome({
-      debug: true
+      debug: false
     });
 
     app.onSync((body) => {
@@ -201,7 +201,7 @@ const chewySmarthome = {
         }
 
         const actionResponse = mockResponseApi();
-        persistance.findSmarthome(smarthomeReq, actionResponse);
+        await persistance.findSmarthome(smarthomeReq, actionResponse);
         const deviceResponseInJson = actionResponse.getJson();
         console.log(deviceResponseInJson, "deviceResponseInJson");
         if(deviceResponseInJson && deviceResponseInJson.action) {
