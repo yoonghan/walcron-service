@@ -438,7 +438,7 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
 
   const _findSmarthomeStatus = async (deviceId: string, callback = defaultCallback) => {
     new Promise((resolve, reject) => {
-      twiceBase(EnumAirtables.SMARTHOME_STATUS).select({
+      smarthomeBase(EnumAirtables.SMARTHOME_STATUS).select({
           pageSize: 1,
           view: "Grid view",
           filterByFormula: `{Device Id}='${deviceId}'`
