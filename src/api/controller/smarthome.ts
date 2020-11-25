@@ -121,6 +121,7 @@ const chewySmarthome = {
       const {params, command} = execution;
 
       let state; let ref;
+      console.log(command, 'command')
       switch (command) {
         case 'action.devices.commands.OnOff':
           state = {on: params.on};
@@ -129,7 +130,7 @@ const chewySmarthome = {
           state = {isRunning: params.isRunning};
           break;
         case 'action.devices.commands.PauseUnpause':
-          state = {isPaused: params.pause};
+          state = {isPaused: params.isPaused};
           break;
       }
 
