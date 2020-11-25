@@ -431,11 +431,16 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
           reject("record not found");
         }
         else {
+          const existingAction = records[0].get('Action');
+          for (const [key, value] of Object.entries(action)) {
+            existingAction[key] = value;
+          }
+          const newAction = existingAction
           smarthomeBase(EnumAirtables.SMARTHOME_STATUS).update([
             {
               "id": records[0].id,
               "fields": {
-                "Action": action
+                "Action": existingAction
               }
             }
           ], function(err, records) {

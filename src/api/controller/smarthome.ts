@@ -123,21 +123,18 @@ const chewySmarthome = {
       let state; let ref;
       switch (command) {
         case 'action.devices.commands.OnOff':
-          params.on = !params.on
           state = {on: params.on};
           break;
         case 'action.devices.commands.StartStop':
-          params.isRunning = !params.isRunning
           state = {isRunning: !params.isRunning};
           break;
         case 'action.devices.commands.PauseUnpause':
-          params.pause = !params.pause
           state = {isPaused: !params.pause};
           break;
       }
 
 
-      const smarthomeLogReq = {
+      const smarthomeReq = {
         body: {
           action: JSON.stringify(state)
         },
@@ -145,16 +142,8 @@ const chewySmarthome = {
           id: deviceId
         }
       }
-      const smarthomeReq = {
-        body: {
-          action: JSON.stringify(execution)
-        },
-        params: {
-          id: deviceId
-        }
-      }
 
-      persistance.createSmarthomeLog(smarthomeLogReq, mockResponseApi());
+      persistance.createSmarthomeLog(smarthomeReq, mockResponseApi());
       persistance.updateSmarthome(smarthomeReq, mockResponseApi());
       publishsubscribe.writeSmarthome(smarthomeReq, mockResponseApi());
 
