@@ -122,6 +122,7 @@ const chewySmarthome = {
 
       let state; let ref;
       console.log(command, 'command')
+      console.log(params, 'params')
       switch (command) {
         case 'action.devices.commands.OnOff':
           state = {on: params.on};
