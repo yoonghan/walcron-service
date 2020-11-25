@@ -126,10 +126,10 @@ const chewySmarthome = {
           state = {on: params.on};
           break;
         case 'action.devices.commands.StartStop':
-          state = {isRunning: !params.isRunning};
+          state = {isRunning: params.isRunning};
           break;
         case 'action.devices.commands.PauseUnpause':
-          state = {isPaused: !params.pause};
+          state = {isPaused: params.pause};
           break;
       }
 
