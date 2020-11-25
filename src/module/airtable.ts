@@ -432,11 +432,9 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
         }
         else {
 
-                      console.log("action", action);
           const existingAction = records[0].get('Action');
           const newAction = JSON.parse(existingAction);
 
-            console.log("existingAction", existingAction);
           for (const [key, value] of Object.entries(JSON.parse(action))) {
             newAction[key] = value;
           }
@@ -445,7 +443,7 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
             {
               "id": records[0].id,
               "fields": {
-                "Action": newAction
+                "Action": JSON.stringify(newAction)
               }
             }
           ], function(err, records) {
