@@ -432,7 +432,7 @@ export function connectAirtable (apiKey:string, twiceBaseKey:string, smarthomeBa
         }
         else {
           const existingAction = records[0].get('Action');
-          for (const [key, value] of Object.entries(action)) {
+          for (const [key, value] of Object.entries(JSON.parse(action))) {
             existingAction[key] = value;
           }
           const newAction = existingAction
